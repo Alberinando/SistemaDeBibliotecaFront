@@ -23,6 +23,7 @@ export default function EditarLivro() {
     const [titulo, setTitulo] = useState<string>('');
     const [autor, setAutor] = useState<string>('');
     const [categoria, setCategoria] = useState<string>('');
+    const [quantidade, setQuantidade] = useState<number>(0);
     const [disponibilidade, setDisponibilidade] = useState<boolean>(true);
     const [isbn, setIsbn] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(true);
@@ -38,6 +39,7 @@ export default function EditarLivro() {
                 setCategoria(livro.categoria);
                 setDisponibilidade(livro.disponibilidade);
                 setIsbn(formatIsbn(String(livro.isbn)));
+                setQuantidade(livro.quantidade);
             } catch (err) {
                 console.error(err);
                 setError('Erro ao carregar dados do livro.');
@@ -66,6 +68,7 @@ export default function EditarLivro() {
                 categoria,
                 disponibilidade,
                 isbn: Number(rawIsbn),
+                quantidade: Number(quantidade),
             });
             router.push('/livros');
         } catch (err) {
@@ -114,6 +117,18 @@ export default function EditarLivro() {
                             type="text"
                             value={categoria}
                             onChange={e => setCategoria(e.target.value)}
+                            required
+                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Quantidade</label>
+                        <input
+                            type="number"
+                            min="0"
+                            value={quantidade}
+                            onChange={e => setQuantidade(Number(e.target.value))}
                             required
                             className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />

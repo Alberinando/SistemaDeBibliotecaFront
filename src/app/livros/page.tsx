@@ -11,6 +11,7 @@ interface Livro {
     categoria: string;
     disponibilidade: boolean;
     isbn: number;
+    quantidade: number;
 }
 
 interface LivroPage {
