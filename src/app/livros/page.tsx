@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import api from '@/services/api';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {Livro, LivroPage} from "@/interface/LivroPros";
 
 export default function ListaLivros() {
@@ -13,6 +14,8 @@ export default function ListaLivros() {
     const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState<boolean>(false);
     const [toDeleteId, setToDeleteId] = useState<number | null>(null);
+
+    const router = useRouter();
 
     const fetchLivros = useCallback(async () => {
         setLoading(true);
@@ -30,8 +33,47 @@ export default function ListaLivros() {
     }, [page]);
 
     useEffect(() => {
+        const handleGlobalShortcuts = (event: KeyboardEvent) => {
+            if (event.ctrlKey && event.key.toLowerCase() === 'a') {
+                event.preventDefault();
+                router.push('/livros/cadastrar');
+            }
+        };
+
+        window.addEventListener('keydown', handleGlobalShortcuts);
+        return () => {
+            window.removeEventListener('keydown', handleGlobalShortcuts);
+        };
+    }, [router]);
+
+    useEffect(() => {
         fetchLivros();
     }, [fetchLivros]);
+
+    useEffect(() => {
+        if (!showModal) return;
+
+        const handleModalKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Enter') {
+                if (toDeleteId !== null) {
+                    handleDelete();
+                }
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                // Remove o foco do elemento ativo
+                if (document.activeElement instanceof HTMLElement) {
+                    document.activeElement.blur();
+                }
+                setShowModal(false);
+                setToDeleteId(null);
+            }
+        };
+
+        window.addEventListener('keydown', handleModalKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleModalKeyDown);
+        };
+    }, [showModal, toDeleteId]);
 
     const handleDelete = async () => {
         if (!toDeleteId) return;
