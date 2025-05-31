@@ -3,22 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import api from '@/services/api';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import Link from 'next/link';
-
-interface Livro {
-    id: number;
-    titulo: string;
-    autor: string;
-    categoria: string;
-    disponibilidade: boolean;
-    isbn: number;
-    quantidade: number;
-}
-
-interface LivroPage {
-    content: Livro[];
-    totalPages: number;
-    number: number;
-}
+import {Livro, LivroPage} from "@/interface/LivroPros";
 
 export default function ListaLivros() {
     const [livros, setLivros] = useState<Livro[]>([]);
@@ -128,7 +113,7 @@ export default function ListaLivros() {
                         <button
                             onClick={() => setPage(prev => Math.min(prev + 1, totalPages - 1))}
                             disabled={page + 1 >= totalPages}
-                            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50 cursor-pointer"
+                            className="px-3 py-1 bg-blue-200 rounded disabled:opacity-50 cursor-pointer"
                         >
                             Próxima
                         </button>
@@ -137,8 +122,9 @@ export default function ListaLivros() {
             )}
 
             {showModal && (
-                <div className="fixed inset-0 bg-black opacity-70 flex items-center justify-center">
-                    <div className="bg-white z-20 p-6 rounded-lg shadow-lg w-80">
+                <div className="fixed inset-0 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black opacity-70"></div>
+                    <div className="relative z-20 bg-white p-6 rounded-lg shadow-lg w-80">
                         <h2 className="text-lg font-semibold mb-4">Confirmar Exclusão</h2>
                         <p className="mb-6">Tem certeza que deseja excluir este livro?</p>
                         <div className="flex justify-end space-x-3">

@@ -3,17 +3,7 @@ import { useEffect, useState, FormEvent } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/services/api';
 import Link from 'next/link';
-
-function formatIsbn(raw: string) {
-    const parts: string[] = [];
-    const digits = raw.slice(0, 13);
-    if (digits.length > 0) parts.push(digits.slice(0, 3));
-    if (digits.length >= 4) parts.push(digits.slice(3, 4));
-    if (digits.length >= 5) parts.push(digits.slice(4, 8));
-    if (digits.length >= 9) parts.push(digits.slice(8, 12));
-    if (digits.length >= 13) parts.push(digits.slice(12, 13));
-    return parts.filter(Boolean).join('-');
-}
+import formatIsbn from "@/util/FormarIsbn";
 
 export default function EditarLivro() {
     const router = useRouter();
