@@ -23,7 +23,7 @@ export default function EditarLivro() {
     const [titulo, setTitulo] = useState<string>('');
     const [autor, setAutor] = useState<string>('');
     const [categoria, setCategoria] = useState<string>('');
-    const [quantidade, setQuantidade] = useState<number>(0);
+    const [quantidade, setQuantidade] = useState<number | "">("");
     const [disponibilidade, setDisponibilidade] = useState<boolean>(true);
     const [isbn, setIsbn] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(true);
@@ -68,7 +68,7 @@ export default function EditarLivro() {
                 categoria,
                 disponibilidade,
                 isbn: Number(rawIsbn),
-                quantidade: Number(quantidade),
+                quantidade: quantidade == "" ? Number(0) : Number(quantidade),
             });
             router.push('/livros');
         } catch (err) {
@@ -128,9 +128,11 @@ export default function EditarLivro() {
                             type="number"
                             min="0"
                             value={quantidade}
-                            onChange={e => setQuantidade(Number(e.target.value))}
+                            onChange={(e) =>
+                                setQuantidade(e.target.value === "" ? "" : Number(e.target.value))
+                            }
                             required
-                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none [&::-webkit-inner-spin-button]:hidden [&::-webkit-outer-spin-button]:hidden"
                         />
                     </div>
 
