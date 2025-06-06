@@ -1,70 +1,124 @@
-"use client"
-import { useState, useEffect, FormEvent } from 'react';
-import api from '@/services/api';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+"use client";
 
-export default function CreateEmprestimo() {
+import { useState, useEffect, FormEvent } from "react";
+import api from "@/services/api";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import {Livro} from "@/interface/LivroPros";
+import {Membro} from "@/interface/MembrosProps";
+import EmprestimoResponseDTO from "@/interface/EmprestimoResponseDTO";
+
+export default function EditEmprestimo() {
     const router = useRouter();
+    const params = useParams();
+    const id = Number(params?.id);
 
-    const hoje = new Date().toLocaleDateString("en-CA", {
-        timeZone: "America/Sao_Paulo",
-    });
+    const hoje = new Date().toISOString().split("T")[0];
 
     const [livroId, setLivroId] = useState<number | "">("");
     const [membroId, setMembroId] = useState<number | "">("");
     const [dataEmprestimo, setDataEmprestimo] = useState<string>(hoje);
     const [dataDevolucao, setDataDevolucao] = useState<string>("");
     const [status, setStatus] = useState<boolean>(true);
-    const [livros, setLivros] = useState<{ id: number; titulo: string }[]>([]);
-    const [membros, setMembros] = useState<{ id: number; nome: string }[]>([]);
+    const [livros, setLivros] = useState<Livro[]>([]);
+    const [membros, setMembros] = useState<Membro[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [fetchError, setFetchError] = useState<string | null>(null);
 
     useEffect(() => {
         async function fetchOptions() {
             try {
-                const livrosResponse = await api.get('/v1/livros/list');
-                const membrosResponse = await api.get('/v1/membros/list');
-                setLivros(livrosResponse.data);
-                setMembros(membrosResponse.data);
-            } catch (error) {
-                console.error(error);
-                setError("Falha ao carregar as opções.");
+                const [livrosRes, membrosRes] = await Promise.all([
+                    api.get<Livro[]>("/v1/livros/list"),
+                    api.get<Membro[]>("/v1/membros/list"),
+                ]);
+                setLivros(livrosRes.data);
+                setMembros(membrosRes.data);
+            } catch (err) {
+                console.error(err);
+                setError("Falha ao carregar opções de livros/membros.");
             }
         }
         fetchOptions();
     }, []);
 
+    useEffect(() => {
+        if (isNaN(id)) {
+            setFetchError("ID de empréstimo inválido.");
+            return;
+        }
+
+        async function fetchEmprestimo() {
+            try {
+                const res = await api.get<EmprestimoResponseDTO>(`/v1/emprestimos/${id}`);
+                const emp = res.data;
+
+                setLivroId(emp.livros.id);
+                setMembroId(emp.membros.id);
+                setDataEmprestimo(emp.dataEmprestimo.split("T")[0]);
+                setDataDevolucao(emp.dataDevolucao ? emp.dataDevolucao.split("T")[0] : "");
+                setStatus(emp.status);
+            } catch (err) {
+                console.error(err);
+                setFetchError("Não foi possível carregar os dados do empréstimo.");
+            }
+        }
+
+        fetchEmprestimo();
+    }, [id]);
+
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        try {
-            const dataEmprestimoISO = new Date(dataEmprestimo + "T00:00:00").toISOString();
-            const dataDevolucaoISO = dataDevolucao ? new Date(dataDevolucao + "T00:00:00").toISOString() : null;
+        setError(null);
 
-            await api.post('/v1/emprestimos', {
+        try {
+            const dataEmpISOUTC = new Date(dataEmprestimo + "T00:00:00Z").toISOString();
+            const dataDevISOUTC = dataDevolucao
+                ? new Date(dataDevolucao + "T00:00:00Z").toISOString()
+                : null;
+
+            await api.put("/v1/emprestimos", {
+                id,
                 livroId: Number(livroId),
                 membroId: Number(membroId),
-                dataEmprestimo: dataEmprestimoISO,
-                dataDevolucao: dataDevolucaoISO,
-                status
+                dataEmprestimo: dataEmpISOUTC,
+                dataDevolucao: dataDevISOUTC,
+                status,
             });
-            router.push('/emprestimos');
-        } catch (error) {
-            console.error(error);
-            setError("Erro ao cadastrar empréstimo.");
+
+            router.push("/emprestimos");
+        } catch (err) {
+            console.error(err);
+            setError("Erro ao atualizar empréstimo.");
         } finally {
             setLoading(false);
         }
     };
 
+    if (fetchError) {
+        return (
+            <div className="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg">
+                <p className="text-red-600 text-center">{fetchError}</p>
+                <div className="text-center mt-4">
+                    <Link
+                        href="/emprestimos"
+                        className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                    >
+                        Voltar
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg">
-            <h1 className="text-3xl font-bold mb-6 text-center">Cadastrar Novo Empréstimo</h1>
+            <h1 className="text-3xl font-bold mb-6 text-center">Editar Empréstimo</h1>
             {error && <div className="mb-4 text-red-600 text-center">{error}</div>}
+
             <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Dropdown para Livro */}
                 <div>
                     <label htmlFor="livro" className="block text-lg font-semibold mb-2 cursor-pointer">
                         Livro
@@ -91,13 +145,19 @@ export default function CreateEmprestimo() {
                                 viewBox="0 0 20 20"
                                 fill="currentColor"
                             >
-                                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
+                                <path
+                                    fillRule="evenodd"
+                                    d="M5.23 7.21a.75.75 0 011.06.02L10
+                     10.94l3.71-3.71a.75.75 0 111.06
+                     1.06l-4.24 4.24a.75.75 0 01-1.06
+                     0L5.21 8.29a.75.75 0 01.02-1.08z"
+                                    clipRule="evenodd"
+                                />
                             </svg>
                         </div>
                     </div>
                 </div>
 
-                {/* Dropdown para Membro */}
                 <div>
                     <label htmlFor="membro" className="block text-lg font-semibold mb-2 cursor-pointer">
                         Membro
@@ -124,13 +184,19 @@ export default function CreateEmprestimo() {
                                 viewBox="0 0 20 20"
                                 fill="currentColor"
                             >
-                                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
+                                <path
+                                    fillRule="evenodd"
+                                    d="M5.23 7.21a.75.75 0 011.06.02L10
+                     10.94l3.71-3.71a.75.75 0 111.06
+                     1.06l-4.24 4.24a.75.75 0 01-1.06
+                     0L5.21 8.29a.75.75 0 01.02-1.08z"
+                                    clipRule="evenodd"
+                                />
                             </svg>
                         </div>
                     </div>
                 </div>
 
-                {/* Data de Empréstimo */}
                 <div>
                     <label htmlFor="dataEmprestimo" className="block text-lg font-semibold mb-2">
                         Data de Empréstimo
@@ -145,7 +211,6 @@ export default function CreateEmprestimo() {
                     />
                 </div>
 
-                {/* Data de Devolução */}
                 <div>
                     <label htmlFor="dataDevolucao" className="block text-lg font-semibold mb-2">
                         Data de Devolução
@@ -159,9 +224,7 @@ export default function CreateEmprestimo() {
                     />
                 </div>
 
-                {/* Status */}
                 <div>
-                    {/* Envolvemos o switch inteiro em um label para que toda a área seja clicável */}
                     <label htmlFor="status" className="flex items-center cursor-pointer">
                         <span className="text-lg font-semibold mr-3">Status</span>
                         <div className="relative">
@@ -179,7 +242,6 @@ export default function CreateEmprestimo() {
                     </label>
                 </div>
 
-                {/* Botões */}
                 <div className="flex justify-between items-center mt-8">
                     <Link
                         href="/emprestimos"
@@ -190,9 +252,9 @@ export default function CreateEmprestimo() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="cursor-pointer px-6 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition disabled:opacity-50"
+                        className="cursor-pointer px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition disabled:opacity-50"
                     >
-                        {loading ? "Salvando..." : "Cadastrar"}
+                        {loading ? "Atualizando..." : "Atualizar"}
                     </button>
                 </div>
             </form>

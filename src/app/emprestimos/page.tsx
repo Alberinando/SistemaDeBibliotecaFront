@@ -4,10 +4,10 @@ import api from '@/services/api';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {Livro, LivroPage} from "@/interface/LivroPros";
+import { Emprestimo, EmprestimoPage } from "@/interface/EmprestimoPros";
 
-export default function ListaLivros() {
-    const [livros, setLivros] = useState<Livro[]>([]);
+export default function ListaEmprestimos() {
+    const [emprestimos, setEmprestimos] = useState<Emprestimo[]>([]);
     const [page, setPage] = useState<number>(0);
     const [totalPages, setTotalPages] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(true);
@@ -17,16 +17,17 @@ export default function ListaLivros() {
 
     const router = useRouter();
 
-    const fetchLivros = useCallback(async () => {
+    const fetchEmprestimos = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await api.get<LivroPage>('/v1/livros', { params: { page, size: 10 } });
-            setLivros(response.data.content);
+            const response = await api.get<EmprestimoPage>('/v1/emprestimos', { params: { page, size: 10 } });
+            console.log(response.data.content)
+            setEmprestimos(response.data.content);
             setTotalPages(response.data.totalPages);
         } catch (err) {
             console.error(err);
-            setError('Falha ao carregar livros.');
+            setError('Falha ao carregar empréstimos.');
         } finally {
             setLoading(false);
         }
@@ -36,7 +37,7 @@ export default function ListaLivros() {
         const handleGlobalShortcuts = (event: KeyboardEvent) => {
             if (event.ctrlKey && event.key.toLowerCase() === 'a') {
                 event.preventDefault();
-                router.push('/livros/cadastrar');
+                router.push('/emprestimos/cadastrar');
             }
         };
 
@@ -47,8 +48,8 @@ export default function ListaLivros() {
     }, [router]);
 
     useEffect(() => {
-        fetchLivros();
-    }, [fetchLivros]);
+        fetchEmprestimos();
+    }, [fetchEmprestimos]);
 
     useEffect(() => {
         if (!showModal) return;
@@ -77,34 +78,37 @@ export default function ListaLivros() {
     const handleDelete = async () => {
         if (!toDeleteId) return;
         try {
-            await api.delete(`/v1/livros/${toDeleteId}`);
+            await api.delete(`/v1/emprestimos/${toDeleteId}`);
             setShowModal(false);
             setToDeleteId(null);
-            fetchLivros();
+            fetchEmprestimos();
         } catch (err) {
             console.error(err);
-            alert('Erro ao excluir livro.');
+            alert('Erro ao excluir empréstimo.');
         }
     };
 
     return (
         <div className="p-6 bg-white rounded-lg shadow">
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-semibold">Lista de Livros</h1>
-                <Link href="/livros/cadastrar" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    Cadastrar Livro
+                <h1 className="text-2xl font-semibold">Lista de Empréstimos</h1>
+                <Link href="/emprestimos/cadastrar" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Cadastrar Empréstimo
                 </Link>
             </div>
 
             {loading ? (
-                <p>Carregando livros...</p>
+                <p>Carregando empréstimos...</p>
             ) : error ? (
                 <p className="text-red-500">{error}</p>
-            ) : livros.length === 0 ? (
+            ) : emprestimos.length === 0 ? (
                 <div className="text-center py-10">
-                    <p className="mb-4">Não há livros cadastrados.</p>
-                    <Link href="/livros/cadastrar" className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                        Cadastrar Primeiro Livro
+                    <p className="mb-4">Não há empréstimos cadastrados.</p>
+                    <Link
+                        href="/emprestimos/cadastrar"
+                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                    >
+                        Cadastrar Primeiro Empréstimo
                     </Link>
                 </div>
             ) : (
@@ -113,25 +117,36 @@ export default function ListaLivros() {
                         <thead>
                         <tr className="bg-gray-100">
                             <th className="px-4 py-2 text-left">ID</th>
-                            <th className="px-4 py-2 text-left">Título</th>
-                            <th className="px-4 py-2 text-left">Categoria</th>
-                            <th className="px-4 py-2 text-left">Autor</th>
+                            <th className="px-4 py-2 text-left">Livro</th>
+                            <th className="px-4 py-2 text-left">Membro</th>
+                            <th className="px-4 py-2 text-left">Data de Empréstimo</th>
+                            <th className="px-4 py-2 text-left">Data de Devolução</th>
+                            <th className="px-4 py-2 text-left">Status</th>
                             <th className="px-4 py-2 text-center">Ações</th>
                         </tr>
                         </thead>
                         <tbody>
-                        {livros.map(livro => (
-                            <tr key={livro.id} className="border-b hover:bg-gray-50">
-                                <td className="px-4 py-2">{livro.id}</td>
-                                <td className="px-4 py-2">{livro.titulo}</td>
-                                <td className="px-4 py-2">{livro.categoria}</td>
-                                <td className="px-4 py-2">{livro.autor}</td>
+                        {emprestimos.map(emprestimo => (
+                            <tr key={emprestimo.id} className="border-b hover:bg-gray-50">
+                                <td className="px-4 py-2">{emprestimo.id}</td>
+                                <td className="px-4 py-2">{emprestimo.livros.titulo}</td>
+                                <td className="px-4 py-2">{emprestimo.membros.nome}</td>
+                                <td className="px-4 py-2">
+                                    {new Date(emprestimo.dataEmprestimo).toLocaleDateString()}
+                                </td>
+                                <td className="px-4 py-2">
+                                    {new Date(emprestimo.dataDevolucao).toLocaleDateString()}
+                                </td>
+                                <td className="px-4 py-2">{emprestimo.status ? 'Ativo' : 'Encerrado'}</td>
                                 <td className="px-4 py-2 flex justify-center space-x-3">
-                                    <Link href={`/livros/${livro.id}`} className="hover:text-blue-600">
+                                    <Link href={`/emprestimos/${emprestimo.id}`} className="hover:text-blue-600">
                                         <FiEdit2 size={20} />
                                     </Link>
                                     <button
-                                        onClick={() => { setShowModal(true); setToDeleteId(livro.id); }}
+                                        onClick={() => {
+                                            setShowModal(true);
+                                            setToDeleteId(emprestimo.id);
+                                        }}
                                         className="hover:text-red-600 cursor-pointer"
                                     >
                                         <FiTrash2 size={20} />
@@ -150,7 +165,9 @@ export default function ListaLivros() {
                         >
                             Anterior
                         </button>
-                        <span> Página {page + 1} de {totalPages} </span>
+                        <span>
+              Página {page + 1} de {totalPages}
+            </span>
                         <button
                             onClick={() => setPage(prev => Math.min(prev + 1, totalPages - 1))}
                             disabled={page + 1 >= totalPages}
@@ -167,10 +184,13 @@ export default function ListaLivros() {
                     <div className="absolute inset-0 bg-black opacity-70"></div>
                     <div className="relative z-20 bg-white p-6 rounded-lg shadow-lg w-80">
                         <h2 className="text-lg font-semibold mb-4">Confirmar Exclusão</h2>
-                        <p className="mb-6">Tem certeza que deseja excluir este livro?</p>
+                        <p className="mb-6">Tem certeza que deseja excluir este empréstimo?</p>
                         <div className="flex justify-end space-x-3">
                             <button
-                                onClick={() => { setShowModal(false); setToDeleteId(null); }}
+                                onClick={() => {
+                                    setShowModal(false);
+                                    setToDeleteId(null);
+                                }}
                                 className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 cursor-pointer"
                             >
                                 Cancelar
