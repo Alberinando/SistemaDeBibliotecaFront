@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -16,7 +15,7 @@ const Sidebar: React.FC = () => {
         <>
             <div
                 className={`md:hidden fixed top-0 left-0 z-50 ${
-                    isOpen ? "bg-gray-400" : "bg-gray-900"
+                    isOpen ? "bg-blue-100" : "bg-gray-900"
                 } w-full h-14 flex items-center px-4`}
             >
                 <button
@@ -29,8 +28,8 @@ const Sidebar: React.FC = () => {
             </div>
 
             <div
-                className={`fixed inset-0 bg-gray-400 z-40 transition-opacity duration-300 md:hidden ${
-                    isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+                className={`fixed inset-0 bg-blue-100 z-40 transition-opacity duration-300 md:hidden ${
+                    isOpen ? "opacity-50" : "opacity-0 pointer-events-none"
                 }`}
                 onClick={toggleSidebar}
             ></div>

@@ -4,10 +4,8 @@ import { useParams, useRouter } from "next/navigation";
 import api from "@/services/api";
 import Link from "next/link";
 import formatTelefone from "@/util/formatTelefone";
-
-const formatCpf = (value: string) => {
-    return value.replace(/\D/g, "").replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-};
+import formatCpf from "@/util/formatCpf";
+import {useAuth} from "@/resources/users/authentication.resourse";
 
 export default function EditarMembro() {
     const router = useRouter();
@@ -22,10 +20,17 @@ export default function EditarMembro() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
+    const auth = useAuth();
+
     useEffect(() => {
         async function fetchMembro() {
+            const userSession = auth.getUserSession();
             try {
-                const response = await api.get(`/v1/membros/${id}`);
+                const response = await api.get(`/v1/membros/${id}`, {
+                    headers: {
+                        "Authorization": `Bearer ${userSession?.accessToken}`
+                    }
+                });
                 const membro = response.data;
                 setNome(membro.nome);
                 setCpf(formatCpf(String(membro.cpf)));
@@ -45,6 +50,7 @@ export default function EditarMembro() {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        const userSession = auth.getUserSession();
         try {
             await api.put(`/v1/membros`, {
                 id,
@@ -52,7 +58,12 @@ export default function EditarMembro() {
                 cpf: Number(cpf.replace(/\D/g, "")), // Remove máscara para envio
                 telefone: Number(telefone.replace(/\D/g, "")), // Remove máscara para envio
                 email,
-            });
+            },
+                {
+                    headers: {
+                        "Authorization": `Bearer ${userSession?.accessToken}`
+                    }
+                });
             router.push("/membros");
         } catch (err) {
             console.error(err);

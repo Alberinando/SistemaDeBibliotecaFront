@@ -5,6 +5,7 @@ import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Emprestimo, EmprestimoPage } from "@/interface/EmprestimoPros";
+import {useAuth} from "@/resources/users/authentication.resourse";
 
 export default function ListaEmprestimos() {
     const [emprestimos, setEmprestimos] = useState<Emprestimo[]>([]);
@@ -16,14 +17,24 @@ export default function ListaEmprestimos() {
     const [toDeleteId, setToDeleteId] = useState<number | null>(null);
 
     const router = useRouter();
+    const auth = useAuth();
 
     const fetchEmprestimos = useCallback(async () => {
         setLoading(true);
         setError(null);
+        const userSession = auth.getUserSession();
         try {
-            const response = await api.get<EmprestimoPage>('/v1/emprestimos', { params: { page, size: 10 } });
-            console.log(response.data.content)
-            setEmprestimos(response.data.content);
+            const response = await api.get<EmprestimoPage>('/v1/emprestimos', {
+                params: { page, size: 10 },
+                headers: {
+                    "Authorization": `Bearer ${userSession?.accessToken}`
+                }
+            });
+            const emprestimosTransformed = response.data.content.map(emprestimo => ({
+                ...emprestimo,
+                dataDevolucao: emprestimo.dataDevolucao ?? ''
+            }));
+            setEmprestimos(emprestimosTransformed);
             setTotalPages(response.data.totalPages);
         } catch (err) {
             console.error(err);
@@ -77,8 +88,14 @@ export default function ListaEmprestimos() {
 
     const handleDelete = async () => {
         if (!toDeleteId) return;
+        const userSession = auth.getUserSession();
         try {
-            await api.delete(`/v1/emprestimos/${toDeleteId}`);
+            await api.delete(`/v1/emprestimos/${toDeleteId}`,
+                {
+                    headers: {
+                        "Authorization": `Bearer ${userSession?.accessToken}`
+                    }
+                });
             setShowModal(false);
             setToDeleteId(null);
             fetchEmprestimos();
@@ -135,7 +152,9 @@ export default function ListaEmprestimos() {
                                     {new Date(emprestimo.dataEmprestimo).toLocaleDateString()}
                                 </td>
                                 <td className="px-4 py-2">
-                                    {new Date(emprestimo.dataDevolucao).toLocaleDateString()}
+                                    {emprestimo.dataDevolucao === ''
+                                        ? ''
+                                        : new Date(emprestimo.dataDevolucao).toLocaleDateString()}
                                 </td>
                                 <td className="px-4 py-2">{emprestimo.status ? 'Ativo' : 'Encerrado'}</td>
                                 <td className="px-4 py-2 flex justify-center space-x-3">

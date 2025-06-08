@@ -5,6 +5,7 @@ import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {Livro, LivroPage} from "@/interface/LivroPros";
+import {useAuth} from "@/resources/users/authentication.resourse";
 
 export default function ListaLivros() {
     const [livros, setLivros] = useState<Livro[]>([]);
@@ -16,12 +17,19 @@ export default function ListaLivros() {
     const [toDeleteId, setToDeleteId] = useState<number | null>(null);
 
     const router = useRouter();
+    const auth = useAuth();
 
     const fetchLivros = useCallback(async () => {
         setLoading(true);
         setError(null);
+        const userSession = auth.getUserSession();
         try {
-            const response = await api.get<LivroPage>('/v1/livros', { params: { page, size: 10 } });
+            const response = await api.get<LivroPage>('/v1/livros', {
+                params: { page, size: 10 },
+                headers: {
+                    "Authorization": `Bearer ${userSession?.accessToken}`
+                }
+            });
             setLivros(response.data.content);
             setTotalPages(response.data.totalPages);
         } catch (err) {
@@ -77,7 +85,12 @@ export default function ListaLivros() {
     const handleDelete = async () => {
         if (!toDeleteId) return;
         try {
-            await api.delete(`/v1/livros/${toDeleteId}`);
+            const userSession = auth.getUserSession();
+            await api.delete(`/v1/livros/${toDeleteId}`, {
+                headers: {
+                    "Authorization": `Bearer ${userSession?.accessToken}`
+                }
+            });
             setShowModal(false);
             setToDeleteId(null);
             fetchLivros();

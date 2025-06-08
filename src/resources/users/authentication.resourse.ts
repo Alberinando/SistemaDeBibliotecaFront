@@ -1,4 +1,4 @@
-import {AcessToken, Credentials, ExtendedJwtPayload, Users, UserSessionToken} from "@/resources/users/users.resouces";
+import {AcessToken, Credentials, ExtendedJwtPayload, UserSessionToken} from "@/resources/users/users.resouces";
 import {jwtDecode} from 'jwt-decode'
 import StorageLike from "@/resources/users/interfaces/storage.interface";
 import BrowserStorage from "@/resources/users/interfaces/browser.storage";
@@ -6,7 +6,7 @@ import NoopStorage from "@/resources/users/interfaces/noop.storage";
 
 class AuthService {
     private storage: StorageLike;
-    baseURL: string = "https://librarysystem-production-3171.up.railway.app/";
+    baseURL: string = "http://localnando.ddns.net:8085/Sistema-de-biblioteca-api/v1/funcionario";
     static AUTH_PARAMS: string = "_auth";
 
     constructor() {
@@ -33,21 +33,6 @@ class AuthService {
         return await response.json();
     }
 
-    async save(user: Users): Promise<void>{
-        const response = await fetch(this.baseURL, {
-            method: 'POST',
-            body: JSON.stringify(user),
-            headers: {
-                "Content-Type": "application/json"
-            }
-        })
-
-        if(response.status === 409){
-            const error = await response.json();
-            throw new Error(error.message)
-        }
-    }
-
     initSession(token: AcessToken) {
         if (!token.accessToken) {
             throw new Error("Token inválido ou ausente");
@@ -57,7 +42,7 @@ class AuthService {
 
         const userSessionToken: UserSessionToken = {
             accessToken: token.accessToken,
-            email: decodedToken?.sub,
+            login: decodedToken?.sub,
             name: decodedToken?.name,
             expiration: decodedToken?.exp
         };

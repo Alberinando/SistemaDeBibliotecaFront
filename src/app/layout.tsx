@@ -1,40 +1,33 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+    variable: "--font-geist-sans",
+    subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+    variable: "--font-geist-mono",
+    subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Sistema de biblioteca",
-  description: "Sistema de biblioteca - A3",
+    title: "Sistema de biblioteca",
+    description: "Sistema de biblioteca - A3",
 };
 
 export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
+                                       children,
+                                   }: Readonly<{
+    children: React.ReactNode;
 }>) {
-  return (
-    <html lang="pt-br">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-blue-100`}
-      >
-      <div className="flex">
-          <Sidebar />
-          <main className="flex-1 p-6">
-              {children}
-          </main>
-      </div>
-      </body>
-    </html>
-  );
+    return (
+        <html lang="pt-br">
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-blue-100`}>
+                <LayoutWrapper>{children}</LayoutWrapper>
+            </body>
+        </html>
+    );
 }

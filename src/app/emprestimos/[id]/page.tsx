@@ -7,6 +7,7 @@ import Link from "next/link";
 import {Livro} from "@/interface/LivroPros";
 import {Membro} from "@/interface/MembrosProps";
 import EmprestimoResponseDTO from "@/interface/EmprestimoResponseDTO";
+import {useAuth} from "@/resources/users/authentication.resourse";
 
 export default function EditEmprestimo() {
     const router = useRouter();
@@ -26,15 +27,24 @@ export default function EditEmprestimo() {
     const [error, setError] = useState<string | null>(null);
     const [fetchError, setFetchError] = useState<string | null>(null);
 
+    const auth = useAuth();
+
     useEffect(() => {
         async function fetchOptions() {
             try {
-                const [livrosRes, membrosRes] = await Promise.all([
-                    api.get<Livro[]>("/v1/livros/list"),
-                    api.get<Membro[]>("/v1/membros/list"),
-                ]);
-                setLivros(livrosRes.data);
-                setMembros(membrosRes.data);
+                const userSession = auth.getUserSession();
+                const livrosResponse = await api.get('/v1/livros/list', {
+                    headers: {
+                        "Authorization": `Bearer ${userSession?.accessToken}`
+                    }
+                });
+                const membrosResponse = await api.get('/v1/membros/list', {
+                    headers: {
+                        "Authorization": `Bearer ${userSession?.accessToken}`
+                    }
+                });
+                setLivros(livrosResponse.data);
+                setMembros(membrosResponse.data);
             } catch (err) {
                 console.error(err);
                 setError("Falha ao carregar opções de livros/membros.");
@@ -51,7 +61,13 @@ export default function EditEmprestimo() {
 
         async function fetchEmprestimo() {
             try {
-                const res = await api.get<EmprestimoResponseDTO>(`/v1/emprestimos/${id}`);
+                const userSession = auth.getUserSession();
+                const res = await api.get<EmprestimoResponseDTO>(`/v1/emprestimos/${id}`,
+                    {
+                        headers: {
+                            "Authorization": `Bearer ${userSession?.accessToken}`
+                        }
+                    });
                 const emp = res.data;
 
                 setLivroId(emp.livros.id);
@@ -72,6 +88,7 @@ export default function EditEmprestimo() {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        const userSession = auth.getUserSession();
 
         try {
             const dataEmpISOUTC = new Date(dataEmprestimo + "T00:00:00Z").toISOString();
@@ -81,12 +98,17 @@ export default function EditEmprestimo() {
 
             await api.put("/v1/emprestimos", {
                 id,
-                livroId: Number(livroId),
-                membroId: Number(membroId),
+                livros: Number(livroId),
+                membros: Number(membroId),
                 dataEmprestimo: dataEmpISOUTC,
                 dataDevolucao: dataDevISOUTC,
                 status,
-            });
+            },
+                {
+                    headers: {
+                        "Authorization": `Bearer ${userSession?.accessToken}`
+                    }
+                });
 
             router.push("/emprestimos");
         } catch (err) {

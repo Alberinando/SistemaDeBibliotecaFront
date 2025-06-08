@@ -5,6 +5,7 @@ import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {Membro, MembroPage} from "@/interface/MembrosProps";
+import {useAuth} from "@/resources/users/authentication.resourse";
 
 export default function ListaMembros() {
     const [membros, setmembros] = useState<Membro[]>([]);
@@ -16,12 +17,16 @@ export default function ListaMembros() {
     const [toDeleteId, setToDeleteId] = useState<number | null>(null);
 
     const router = useRouter();
+    const auth = useAuth();
 
     const fetchMembros = useCallback(async () => {
         setLoading(true);
         setError(null);
+        const userSession = auth.getUserSession();
         try {
-            const response = await api.get<MembroPage>('/v1/membros', { params: { page, size: 10 } });
+            const response = await api.get<MembroPage>('/v1/membros', { params: { page, size: 10 },headers: {
+                    "Authorization": `Bearer ${userSession?.accessToken}`
+                } });
             setmembros(response.data.content);
             setTotalPages(response.data.totalPages);
         } catch (err) {
@@ -76,8 +81,13 @@ export default function ListaMembros() {
 
     const handleDelete = async () => {
         if (!toDeleteId) return;
+        const userSession = auth.getUserSession();
         try {
-            await api.delete(`/v1/membros/${toDeleteId}`);
+            await api.delete(`/v1/membros/${toDeleteId}`, {
+                headers: {
+                    "Authorization": `Bearer ${userSession?.accessToken}`
+                }
+            });
             setShowModal(false);
             setToDeleteId(null);
             fetchMembros();

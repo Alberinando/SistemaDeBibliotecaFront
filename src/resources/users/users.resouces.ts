@@ -2,13 +2,13 @@ import {JwtPayload} from "jwt-decode";
 
 export class Users {
     name?: string;
-    email?: string;
-    password?: string;
+    login?: string;
+    senha?: string;
 }
 
 export class Credentials {
-    email?: string;
-    password?: string;
+    login?: string;
+    senha?: string;
 }
 
 export class AcessToken {
@@ -17,7 +17,7 @@ export class AcessToken {
 
 export class UserSessionToken {
     name?: string;
-    email?: string;
+    login?: string;
     accessToken?: string;
     expiration?: number;
 }

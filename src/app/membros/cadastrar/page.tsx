@@ -1,15 +1,18 @@
 "use client";
-import { useState, FormEvent, useRef, useEffect } from "react";
+import {useState, FormEvent, useRef, useEffect} from "react";
 import api from "@/services/api";
-import { useRouter } from "next/navigation";
+import {useRouter} from "next/navigation";
 import Link from "next/link";
+import formatTelefone from "@/util/formatTelefone";
+import formatCpf from "@/util/formatCpf";
+import {useAuth} from "@/resources/users/authentication.resourse";
 
 export default function CreateMembro() {
     const router = useRouter();
 
     const [nome, setNome] = useState<string>("");
-    const [cpf, setCpf] = useState<number | "">("");
-    const [telefone, setTelefone] = useState<number | "">("");
+    const [cpf, setCpf] = useState<string>("");
+    const [telefone, setTelefone] = useState<string>("");
     const [email, setEmail] = useState<string>("");
 
     const [loading, setLoading] = useState<boolean>(false);
@@ -20,6 +23,8 @@ export default function CreateMembro() {
     const telefoneRef = useRef<HTMLInputElement>(null);
     const emailRef = useRef<HTMLInputElement>(null);
     const submitButtonRef = useRef<HTMLButtonElement>(null);
+
+    const auth = useAuth();
 
     useEffect(() => {
         const cycleRefs = [nomeRef, cpfRef, telefoneRef, emailRef];
@@ -84,13 +89,19 @@ export default function CreateMembro() {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        const userSession = auth.getUserSession();
         try {
             await api.post("/v1/membros", {
                 nome,
-                cpf: cpf === "" ? 0 : Number(cpf),
-                telefone: telefone === "" ? 0 : Number(telefone),
+                cpf: Number(cpf.replace(/\D/g, "")),
+                telefone: Number(telefone.replace(/\D/g, "")),
                 email,
-            });
+            },
+                {
+                    headers: {
+                        "Authorization": `Bearer ${userSession?.accessToken}`
+                    }
+                });
             router.push("/membros");
         } catch (err) {
             console.error(err);
@@ -108,29 +119,56 @@ export default function CreateMembro() {
 
                 <div>
                     <label className="block text-sm font-medium mb-1">Nome</label>
-                    <input ref={nomeRef} type="text" value={nome} onChange={(e) => setNome(e.target.value)} required className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <input ref={nomeRef} type="text" value={nome} onChange={(e) => setNome(e.target.value)} required
+                           className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"/>
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium mb-1">CPF</label>
-                    <input ref={cpfRef} type="number" value={cpf} onChange={(e) => setCpf(e.target.value === "" ? "" : Number(e.target.value))} required className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 [&::-webkit-inner-spin-button]:hidden [&::-webkit-outer-spin-button]:hidden" />
+                    <input
+                        type="text"
+                        value={cpf}
+                        onChange={(e) => {
+                            let digits = e.target.value.replace(/\D/g, "");
+                            if (digits.length > 11) digits = digits.slice(0, 11);
+                            setCpf(formatCpf(digits));
+                        }}
+
+                        required
+                        placeholder="000.000.000-00"
+                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium mb-1">Telefone</label>
-                    <input ref={telefoneRef} type="number" value={telefone} onChange={(e) => setTelefone(e.target.value === "" ? "" : Number(e.target.value))} required className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 [&::-webkit-inner-spin-button]:hidden [&::-webkit-outer-spin-button]:hidden" />
+                    <input
+                        type="text"
+                        value={telefone}
+                        onChange={(e) => {
+                            let digits = e.target.value.replace(/\D/g, "");
+                            if (digits.length > 11) digits = digits.slice(0, 11);
+                            setTelefone(formatTelefone(digits));
+                        }}
+
+                        required
+                        placeholder="(00) 00000-0000"
+                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium mb-1">Email</label>
-                    <input ref={emailRef} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <input ref={emailRef} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
+                           className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"/>
                 </div>
 
                 <div className="flex justify-between items-center mt-6">
                     <Link href="/membros" className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 cursor-pointer">
                         Voltar
                     </Link>
-                    <button ref={submitButtonRef} type="submit" disabled={loading} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 cursor-pointer">
+                    <button ref={submitButtonRef} type="submit" disabled={loading}
+                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 cursor-pointer">
                         {loading ? "Salvando..." : "Cadastrar"}
                     </button>
                 </div>

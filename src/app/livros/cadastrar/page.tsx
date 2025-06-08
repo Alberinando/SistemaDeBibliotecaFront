@@ -4,6 +4,7 @@ import api from '@/services/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import formatIsbn from "@/util/FormarIsbn";
+import {useAuth} from "@/resources/users/authentication.resourse";
 
 export default function CreateLivro() {
     const router = useRouter();
@@ -12,6 +13,7 @@ export default function CreateLivro() {
     const [autor, setAutor] = useState<string>('');
     const [categoria, setCategoria] = useState<string>('');
     const [quantidade, setQuantidade] = useState<number | "">("");
+    const [token, setToken] = useState<string>();
     const [disponibilidade, setDisponibilidade] = useState<boolean>(true);
     const [isbn, setIsbn] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
@@ -24,21 +26,31 @@ export default function CreateLivro() {
     const isbnRef = useRef<HTMLInputElement>(null);
 
     const submitButtonRef = useRef<HTMLButtonElement>(null);
+    const auth = useAuth();
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
+
+        const rawIsbn = isbn.replace(/\D/g, '');
         try {
-            const rawIsbn = isbn.replace(/\D/g, '');
-            await api.post('/v1/livros', {
-                titulo,
-                autor,
-                categoria,
-                disponibilidade,
-                isbn: Number(rawIsbn),
-                quantidade: quantidade === "" ? Number(0) : Number(quantidade),
-            });
+            await api.post(
+                '/v1/livros',
+                {
+                    titulo: titulo,
+                    autor: autor,
+                    categoria: categoria,
+                    disponibilidade: disponibilidade,
+                    isbn: Number(rawIsbn),
+                    quantidade: quantidade === "" ? 0 : Number(quantidade),
+                },
+                {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                }
+            );
             router.push('/livros');
         } catch (err) {
             console.error(err);
@@ -55,6 +67,8 @@ export default function CreateLivro() {
 
     useEffect(() => {
         const cycleRefs = [tituloRef, autorRef, categoriaRef, quantidadeRef, isbnRef];
+        const userSession = auth.getUserSession();
+        setToken(userSession?.accessToken);
 
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.ctrlKey && event.key.toLowerCase() === 's') {

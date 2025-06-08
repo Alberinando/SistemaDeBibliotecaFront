@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import api from '@/services/api';
 import Link from 'next/link';
 import formatIsbn from "@/util/FormarIsbn";
+import {useAuth} from "@/resources/users/authentication.resourse";
 
 export default function EditarLivro() {
     const router = useRouter();
@@ -19,10 +20,17 @@ export default function EditarLivro() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
+    const auth = useAuth();
+
     useEffect(() => {
         async function fetchLivro() {
             try {
-                const response = await api.get(`/v1/livros/${id}`);
+                const userSession = auth.getUserSession();
+                const response = await api.get(`/v1/livros/${id}`, {
+                    headers: {
+                        "Authorization": `Bearer ${userSession?.accessToken}`
+                    }
+                });
                 const livro = response.data;
                 setTitulo(livro.titulo);
                 setAutor(livro.autor);
@@ -49,6 +57,7 @@ export default function EditarLivro() {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        const userSession = auth.getUserSession();
         try {
             const rawIsbn = isbn.replace(/\D/g, '');
             await api.put(`/v1/livros`, {
@@ -59,7 +68,12 @@ export default function EditarLivro() {
                 disponibilidade,
                 isbn: Number(rawIsbn),
                 quantidade: quantidade == "" ? Number(0) : Number(quantidade),
-            });
+            },
+                {
+                    headers: {
+                        "Authorization": `Bearer ${userSession?.accessToken}`
+                    }
+                });
             router.push('/livros');
         } catch (err) {
             console.error(err);

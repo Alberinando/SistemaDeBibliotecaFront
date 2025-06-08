@@ -3,6 +3,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import api from '@/services/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {useAuth} from "@/resources/users/authentication.resourse";
 
 export default function CreateEmprestimo() {
     const router = useRouter();
@@ -21,11 +22,22 @@ export default function CreateEmprestimo() {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
+    const auth = useAuth();
+
     useEffect(() => {
         async function fetchOptions() {
+            const userSession = auth.getUserSession();
             try {
-                const livrosResponse = await api.get('/v1/livros/list');
-                const membrosResponse = await api.get('/v1/membros/list');
+                const livrosResponse = await api.get('/v1/livros/list', {
+                    headers: {
+                        "Authorization": `Bearer ${userSession?.accessToken}`
+                    }
+                });
+                const membrosResponse = await api.get('/v1/membros/list', {
+                    headers: {
+                        "Authorization": `Bearer ${userSession?.accessToken}`
+                    }
+                });
                 setLivros(livrosResponse.data);
                 setMembros(membrosResponse.data);
             } catch (error) {
@@ -39,6 +51,7 @@ export default function CreateEmprestimo() {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        const userSession = auth.getUserSession();
         try {
             const dataEmprestimoISO = new Date(dataEmprestimo + "T00:00:00").toISOString();
             const dataDevolucaoISO = dataDevolucao ? new Date(dataDevolucao + "T00:00:00").toISOString() : null;
@@ -49,7 +62,12 @@ export default function CreateEmprestimo() {
                 dataEmprestimo: dataEmprestimoISO,
                 dataDevolucao: dataDevolucaoISO,
                 status
-            });
+            },
+                {
+                    headers: {
+                        "Authorization": `Bearer ${userSession?.accessToken}`
+                    }
+                });
             router.push('/emprestimos');
         } catch (error) {
             console.error(error);

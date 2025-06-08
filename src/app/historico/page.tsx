@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import api from "@/services/api";
 import { Historico, HistoricoPage } from "@/interface/HistoricoPros";
+import {useAuth} from "@/resources/users/authentication.resourse";
 
 export default function ListaHistorico() {
     const [historicos, setHistoricos] = useState<Historico[]>([]);
@@ -10,13 +11,19 @@ export default function ListaHistorico() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
+    const auth = useAuth();
+
     const fetchHistoricos = useCallback(async () => {
         setLoading(true);
         setError(null);
+        const userSession = auth.getUserSession();
 
         try {
             const response = await api.get<HistoricoPage>("/v1/historico", {
                 params: { page, size: 10 },
+                headers: {
+                    "Authorization": `Bearer ${userSession?.accessToken}`
+                }
             });
             console.log(response);
             setHistoricos(response.data.content);
