@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {Membro, MembroPage} from "@/interface/MembrosProps";
 import {useAuth} from "@/resources/users/authentication.resourse";
+import AuthenticatedPage from '@/components/Authenticated/AuthenticatedPage';
 
 export default function ListaMembros() {
     const [membros, setmembros] = useState<Membro[]>([]);
@@ -98,6 +99,7 @@ export default function ListaMembros() {
     };
 
     return (
+        <AuthenticatedPage>
         <div className="p-6 bg-white rounded-lg shadow">
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-semibold">Lista de Membros</h1>
@@ -194,5 +196,6 @@ export default function ListaMembros() {
                 </div>
             )}
         </div>
+            </AuthenticatedPage>
     );
 }

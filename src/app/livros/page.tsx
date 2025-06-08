@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {Livro, LivroPage} from "@/interface/LivroPros";
 import {useAuth} from "@/resources/users/authentication.resourse";
+import AuthenticatedPage from '@/components/Authenticated/AuthenticatedPage';
 
 export default function ListaLivros() {
     const [livros, setLivros] = useState<Livro[]>([]);
@@ -101,6 +102,7 @@ export default function ListaLivros() {
     };
 
     return (
+        <AuthenticatedPage>
         <div className="p-6 bg-white rounded-lg shadow">
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-semibold">Lista de Livros</h1>
@@ -199,5 +201,6 @@ export default function ListaLivros() {
                 </div>
             )}
         </div>
+            </AuthenticatedPage>
     );
 }

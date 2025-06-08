@@ -6,7 +6,7 @@ import NoopStorage from "@/resources/users/interfaces/noop.storage";
 
 class AuthService {
     private storage: StorageLike;
-    baseURL: string = "http://localnando.ddns.net:8085/Sistema-de-biblioteca-api/v1/funcionario";
+    baseURL: string = "http://localhost:8088/v1/funcionario";
     static AUTH_PARAMS: string = "_auth";
 
     constructor() {

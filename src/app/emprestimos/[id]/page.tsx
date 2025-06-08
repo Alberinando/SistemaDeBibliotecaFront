@@ -8,6 +8,7 @@ import {Livro} from "@/interface/LivroPros";
 import {Membro} from "@/interface/MembrosProps";
 import EmprestimoResponseDTO from "@/interface/EmprestimoResponseDTO";
 import {useAuth} from "@/resources/users/authentication.resourse";
+import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
 
 export default function EditEmprestimo() {
     const router = useRouter();
@@ -121,21 +122,24 @@ export default function EditEmprestimo() {
 
     if (fetchError) {
         return (
-            <div className="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg">
-                <p className="text-red-600 text-center">{fetchError}</p>
-                <div className="text-center mt-4">
-                    <Link
-                        href="/emprestimos"
-                        className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
-                    >
-                        Voltar
-                    </Link>
+            <AuthenticatedPage>
+                <div className="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg">
+                    <p className="text-red-600 text-center">{fetchError}</p>
+                    <div className="text-center mt-4">
+                        <Link
+                            href="/emprestimos"
+                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                        >
+                            Voltar
+                        </Link>
+                    </div>
                 </div>
-            </div>
+            </AuthenticatedPage>
         );
     }
 
     return (
+        <AuthenticatedPage>
         <div className="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg">
             <h1 className="text-3xl font-bold mb-6 text-center">Editar Empréstimo</h1>
             {error && <div className="mb-4 text-red-600 text-center">{error}</div>}
@@ -281,5 +285,6 @@ export default function EditEmprestimo() {
                 </div>
             </form>
         </div>
+        </AuthenticatedPage>
     );
 }

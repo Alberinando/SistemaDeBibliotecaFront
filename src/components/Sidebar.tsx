@@ -1,13 +1,21 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import {usePathname, useRouter} from "next/navigation";
 import menuItems from "@/util/Options";
 import { FaBars, FaTimes } from "react-icons/fa";
+import {useAuth} from "@/resources/users/authentication.resourse";
 
 const Sidebar: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
+    const auth = useAuth();
+    const router = useRouter();
+
+    function logout() {
+        auth.invalidateSession();
+        router.push("/");
+    }
 
     const toggleSidebar = () => setIsOpen((prevState) => !prevState);
 
@@ -70,7 +78,7 @@ const Sidebar: React.FC = () => {
                 </nav>
 
                 <div className="flex-shrink-0 p-4 border-t border-gray-800">
-                    <button className="w-full px-4 py-2 bg-red-600 hover:bg-red-500 rounded transition-colors">
+                    <button className="w-full px-4 py-2 bg-red-600 hover:bg-red-500 rounded transition-colors" onClick={logout}>
                         Sair
                     </button>
                 </div>

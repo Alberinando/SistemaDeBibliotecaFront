@@ -6,6 +6,7 @@ import Link from "next/link";
 import formatTelefone from "@/util/formatTelefone";
 import formatCpf from "@/util/formatCpf";
 import {useAuth} from "@/resources/users/authentication.resourse";
+import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
 
 export default function CreateMembro() {
     const router = useRouter();
@@ -112,6 +113,7 @@ export default function CreateMembro() {
     };
 
     return (
+        <AuthenticatedPage>
         <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow">
             <h1 className="text-2xl font-semibold mb-4">Cadastrar Novo Membro</h1>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -174,5 +176,6 @@ export default function CreateMembro() {
                 </div>
             </form>
         </div>
+            </AuthenticatedPage>
     );
 }

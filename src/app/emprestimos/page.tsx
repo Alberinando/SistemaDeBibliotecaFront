@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Emprestimo, EmprestimoPage } from "@/interface/EmprestimoPros";
 import {useAuth} from "@/resources/users/authentication.resourse";
+import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
 
 export default function ListaEmprestimos() {
     const [emprestimos, setEmprestimos] = useState<Emprestimo[]>([]);
@@ -106,7 +107,8 @@ export default function ListaEmprestimos() {
     };
 
     return (
-        <div className="p-6 bg-white rounded-lg shadow">
+        <AuthenticatedPage>
+            <div className="p-6 bg-white rounded-lg shadow">
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-semibold">Lista de Empréstimos</h1>
                 <Link href="/emprestimos/cadastrar" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
@@ -224,6 +226,7 @@ export default function ListaEmprestimos() {
                     </div>
                 </div>
             )}
-        </div>
+            </div>
+        </AuthenticatedPage>
     );
 }

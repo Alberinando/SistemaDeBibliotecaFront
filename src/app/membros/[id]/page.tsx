@@ -6,6 +6,7 @@ import Link from "next/link";
 import formatTelefone from "@/util/formatTelefone";
 import formatCpf from "@/util/formatCpf";
 import {useAuth} from "@/resources/users/authentication.resourse";
+import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
 
 export default function EditarMembro() {
     const router = useRouter();
@@ -74,6 +75,7 @@ export default function EditarMembro() {
     };
 
     return (
+        <AuthenticatedPage>
         <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow">
             <h1 className="text-2xl font-semibold mb-4">Editar Membro</h1>
             {loading ? (
@@ -127,5 +129,6 @@ export default function EditarMembro() {
                 </form>
             )}
         </div>
+            </AuthenticatedPage>
     );
 }

@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import api from "@/services/api";
 import Link from "next/link";
 import {useAuth} from "@/resources/users/authentication.resourse";
+import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
 
 export default function EditarFuncionario() {
     const router = useRouter();
@@ -71,6 +72,7 @@ export default function EditarFuncionario() {
     };
 
     return (
+        <AuthenticatedPage>
         <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow">
             <h1 className="text-2xl font-semibold mb-4">Editar Funcionário</h1>
             {loading ? (
@@ -130,5 +132,6 @@ export default function EditarFuncionario() {
                 </form>
             )}
         </div>
+            </AuthenticatedPage>
     );
 }

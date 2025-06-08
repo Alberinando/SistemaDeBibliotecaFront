@@ -5,6 +5,7 @@ import api from '@/services/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {useAuth} from "@/resources/users/authentication.resourse";
+import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
 
 export default function CreateFuncionario() {
     const router = useRouter();
@@ -118,6 +119,7 @@ export default function CreateFuncionario() {
     }, [nome, cargo, login, senha, router]);
 
     return (
+        <AuthenticatedPage>
         <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow max-md:mt-11">
             <h1 className="text-2xl font-semibold mb-4">Cadastrar Novo Funcionário</h1>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -189,5 +191,6 @@ export default function CreateFuncionario() {
                 </div>
             </form>
         </div>
+            </AuthenticatedPage>
     );
 }

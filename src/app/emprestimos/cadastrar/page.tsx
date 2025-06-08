@@ -4,6 +4,7 @@ import api from '@/services/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {useAuth} from "@/resources/users/authentication.resourse";
+import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
 
 export default function CreateEmprestimo() {
     const router = useRouter();
@@ -78,6 +79,7 @@ export default function CreateEmprestimo() {
     };
 
     return (
+        <AuthenticatedPage>
         <div className="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg">
             <h1 className="text-3xl font-bold mb-6 text-center">Cadastrar Novo Empréstimo</h1>
             {error && <div className="mb-4 text-red-600 text-center">{error}</div>}
@@ -215,5 +217,6 @@ export default function CreateEmprestimo() {
                 </div>
             </form>
         </div>
+            </AuthenticatedPage>
     );
 }

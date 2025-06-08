@@ -5,6 +5,7 @@ import api from '@/services/api';
 import Link from 'next/link';
 import formatIsbn from "@/util/FormarIsbn";
 import {useAuth} from "@/resources/users/authentication.resourse";
+import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
 
 export default function EditarLivro() {
     const router = useRouter();
@@ -84,6 +85,7 @@ export default function EditarLivro() {
     };
 
     return (
+        <AuthenticatedPage>
         <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow">
             <h1 className="text-2xl font-semibold mb-4">Editar Livro</h1>
             {loading ? (
@@ -184,5 +186,6 @@ export default function EditarLivro() {
                 </form>
             )}
         </div>
+            </AuthenticatedPage>
     );
 }

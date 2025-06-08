@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import api from "@/services/api";
 import { Historico, HistoricoPage } from "@/interface/HistoricoPros";
 import {useAuth} from "@/resources/users/authentication.resourse";
+import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
 
 export default function ListaHistorico() {
     const [historicos, setHistoricos] = useState<Historico[]>([]);
@@ -41,6 +42,7 @@ export default function ListaHistorico() {
     }, [fetchHistoricos]);
 
     return (
+        <AuthenticatedPage>
         <div className="p-6 bg-white rounded-lg shadow">
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-semibold">Histórico de Empréstimos</h1>
@@ -105,5 +107,6 @@ export default function ListaHistorico() {
                 </>
             )}
         </div>
+            </AuthenticatedPage>
     );
 }
