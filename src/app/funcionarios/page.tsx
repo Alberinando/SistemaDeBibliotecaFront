@@ -5,20 +5,7 @@ import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {useAuth} from "@/resources/users/authentication.resourse";
-import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
-
-interface Funcionario {
-    id: number;
-    nome: string;
-    cargo: string;
-    login: string;
-}
-
-interface FuncionarioPage {
-    content: Funcionario[];
-    totalPages: number;
-    number: number;
-}
+import FuncionarioPage, {Funcionario} from "@/interface/FuncionarioProps";
 
 export default function ListaFuncionarios() {
     const [funcionarios, setFuncionarios] = useState<Funcionario[]>([]);

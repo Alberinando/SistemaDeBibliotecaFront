@@ -5,25 +5,36 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {useAuth} from "@/resources/users/authentication.resourse";
 import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
+import {Calendar} from "@heroui/calendar";
+import {Popover, PopoverContent, PopoverTrigger} from "@heroui/popover";
 
 export default function CreateEmprestimo() {
     const router = useRouter();
 
-    const hoje = new Date().toLocaleDateString("en-CA", {
-        timeZone: "America/Sao_Paulo",
-    });
 
     const [livroId, setLivroId] = useState<number | "">("");
     const [membroId, setMembroId] = useState<number | "">("");
-    const [dataEmprestimo, setDataEmprestimo] = useState<string>(hoje);
+    const [dataEmprestimo, setDataEmprestimo] = useState<string>("");
     const [dataDevolucao, setDataDevolucao] = useState<string>("");
     const [status, setStatus] = useState<boolean>(true);
     const [livros, setLivros] = useState<{ id: number; titulo: string }[]>([]);
     const [membros, setMembros] = useState<{ id: number; nome: string }[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [showEmprestimoCal, setShowEmprestimoCal] = useState(false);
+
+    function toISODateString(date: Date) {
+        return date.toISOString().slice(0, 10);
+    }
 
     const auth = useAuth();
+
+    useEffect(() => {
+        const hojeISO = new Date().toLocaleDateString("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+        });
+        setDataEmprestimo(hojeISO);
+    }, []);
 
     useEffect(() => {
         async function fetchOptions() {
@@ -55,7 +66,9 @@ export default function CreateEmprestimo() {
         const userSession = auth.getUserSession();
         try {
             const dataEmprestimoISO = new Date(dataEmprestimo + "T00:00:00").toISOString();
-            const dataDevolucaoISO = dataDevolucao ? new Date(dataDevolucao + "T00:00:00").toISOString() : null;
+            const dataDevolucaoISO = dataDevolucao
+                ? new Date(dataDevolucao + "T00:00:00").toISOString()
+                : null;
 
             await api.post('/v1/emprestimos', {
                 livroId: Number(livroId),
@@ -152,17 +165,29 @@ export default function CreateEmprestimo() {
 
                 {/* Data de Empréstimo */}
                 <div>
-                    <label htmlFor="dataEmprestimo" className="block text-lg font-semibold mb-2">
-                        Data de Empréstimo
-                    </label>
-                    <input
-                        id="dataEmprestimo"
-                        type="date"
-                        value={dataEmprestimo}
-                        onChange={(e) => setDataEmprestimo(e.target.value)}
-                        required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                    />
+                    <label className="block text-lg font-semibold mb-2">Data de Empréstimo</label>
+                    <Popover isOpen={showEmprestimoCal} onOpenChange={setShowEmprestimoCal}>
+                        <PopoverTrigger>
+                            <input
+                                type="text"
+                                readOnly
+                                value={dataEmprestimo}
+                                placeholder="Selecione data"
+                                onClick={() => setShowEmprestimoCal(true)}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                            />
+                        </PopoverTrigger>
+                        <PopoverContent className="z-50">
+                            <Calendar
+                                defaultValue={dataEmprestimo}
+                                onSelect={(date: Date) => {
+                                    const iso = toISODateString(date);
+                                    setDataEmprestimo(iso);
+                                    setShowEmprestimoCal(false);
+                                }}
+                            />
+                        </PopoverContent>
+                    </Popover>
                 </div>
 
                 {/* Data de Devolução */}

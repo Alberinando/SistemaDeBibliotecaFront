@@ -26,7 +26,6 @@ export default function ListaHistorico() {
                     "Authorization": `Bearer ${userSession?.accessToken}`
                 }
             });
-            console.log(response);
             setHistoricos(response.data.content);
             setTotalPages(response.data.totalPages);
         } catch (err) {
