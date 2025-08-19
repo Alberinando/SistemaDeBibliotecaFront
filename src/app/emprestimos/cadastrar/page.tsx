@@ -5,36 +5,29 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {useAuth} from "@/resources/users/authentication.resourse";
 import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
-import {Calendar} from "@heroui/calendar";
-import {Popover, PopoverContent, PopoverTrigger} from "@heroui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar } from "@/components/ui/calendar"
+import {ChevronDownIcon} from "lucide-react";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {Button} from "@/components/ui/button";
 
 export default function CreateEmprestimo() {
     const router = useRouter();
 
 
-    const [livroId, setLivroId] = useState<number | "">("");
-    const [membroId, setMembroId] = useState<number | "">("");
-    const [dataEmprestimo, setDataEmprestimo] = useState<string>("");
-    const [dataDevolucao, setDataDevolucao] = useState<string>("");
+    const [livroId, setLivroId] = useState<string>("");
+    const [membroId, setMembroId] = useState<string>("");
+    const [dataEmprestimoDate, setDataEmprestimoDate] = useState<Date | undefined>(new Date());
+    const [dataDevolucaoDate, setDataDevolucaoDate] = useState<Date | undefined>(undefined);
     const [status, setStatus] = useState<boolean>(true);
     const [livros, setLivros] = useState<{ id: number; titulo: string }[]>([]);
     const [membros, setMembros] = useState<{ id: number; nome: string }[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const [showEmprestimoCal, setShowEmprestimoCal] = useState(false);
-
-    function toISODateString(date: Date) {
-        return date.toISOString().slice(0, 10);
-    }
+    const [openEmprestimo, setOpenEmprestimo] = useState<boolean>(false);
+    const [openDevolucao, setOpenDevolucao] = useState<boolean>(false);
 
     const auth = useAuth();
-
-    useEffect(() => {
-        const hojeISO = new Date().toLocaleDateString("pt-BR", {
-            timeZone: "America/Sao_Paulo",
-        });
-        setDataEmprestimo(hojeISO);
-    }, []);
 
     useEffect(() => {
         async function fetchOptions() {
@@ -60,15 +53,19 @@ export default function CreateEmprestimo() {
         fetchOptions();
     }, []);
 
+    function dateToIsoAtMidnightLocal(date?: Date | undefined) {
+        if (!date) return null;
+        const localMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        return localMidnight.toISOString();
+    }
+
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         const userSession = auth.getUserSession();
         try {
-            const dataEmprestimoISO = new Date(dataEmprestimo + "T00:00:00").toISOString();
-            const dataDevolucaoISO = dataDevolucao
-                ? new Date(dataDevolucao + "T00:00:00").toISOString()
-                : null;
+            const dataEmprestimoISO = dateToIsoAtMidnightLocal(dataEmprestimoDate);
+            const dataDevolucaoISO = dateToIsoAtMidnightLocal(dataDevolucaoDate);
 
             await api.post('/v1/emprestimos', {
                 livroId: Number(livroId),
@@ -102,32 +99,30 @@ export default function CreateEmprestimo() {
                     <label htmlFor="livro" className="block text-lg font-semibold mb-2 cursor-pointer">
                         Livro
                     </label>
-                    <div className="relative">
-                        <select
+                    <Select
+                        value={livroId}
+                        onValueChange={(value) => setLivroId(value)}
+                        name="livro"
+                        required
+                    >
+                        <SelectTrigger
                             id="livro"
-                            value={livroId}
-                            onChange={(e) => setLivroId(Number(e.target.value))}
-                            required
-                            className="cursor-pointer appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-10 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                            className="w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-4 text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                            <option value="">Selecione um livro</option>
+                            <SelectValue placeholder="Selecione um livro" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border border-gray-200 rounded-md mt-1 shadow-lg">
                             {livros.map((livro) => (
-                                <option key={livro.id} value={livro.id}>
+                                <SelectItem
+                                    key={livro.id}
+                                    value={livro.id.toString()}
+                                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                >
                                     {livro.titulo}
-                                </option>
+                                </SelectItem>
                             ))}
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <svg
-                                className="h-5 w-5 text-gray-500"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                            >
-                                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
-                            </svg>
-                        </div>
-                    </div>
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 {/* Dropdown para Membro */}
@@ -135,56 +130,54 @@ export default function CreateEmprestimo() {
                     <label htmlFor="membro" className="block text-lg font-semibold mb-2 cursor-pointer">
                         Membro
                     </label>
-                    <div className="relative">
-                        <select
+                    <Select
+                        value={membroId}
+                        onValueChange={(value) => setMembroId(value)}
+                        name="membro"
+                        required
+                    >
+                        <SelectTrigger
                             id="membro"
-                            value={membroId}
-                            onChange={(e) => setMembroId(Number(e.target.value))}
-                            required
-                            className="cursor-pointer appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-10 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                            className="w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-4 text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                            <option value="">Selecione um membro</option>
+                            <SelectValue placeholder="Selecione um membro" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border border-gray-200 rounded-md mt-1 shadow-lg">
                             {membros.map((membro) => (
-                                <option key={membro.id} value={membro.id}>
+                                <SelectItem
+                                    key={membro.id}
+                                    value={membro.id.toString()}
+                                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                >
                                     {membro.nome}
-                                </option>
+                                </SelectItem>
                             ))}
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <svg
-                                className="h-5 w-5 text-gray-500"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                            >
-                                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
-                            </svg>
-                        </div>
-                    </div>
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 {/* Data de Empréstimo */}
                 <div>
-                    <label className="block text-lg font-semibold mb-2">Data de Empréstimo</label>
-                    <Popover isOpen={showEmprestimoCal} onOpenChange={setShowEmprestimoCal}>
-                        <PopoverTrigger>
-                            <input
-                                type="text"
-                                readOnly
-                                value={dataEmprestimo}
-                                placeholder="Selecione data"
-                                onClick={() => setShowEmprestimoCal(true)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                            />
+                    <label htmlFor="dataEmprestimo" className="block text-lg font-semibold mb-2">
+                        Data de Empréstimo
+                    </label>
+                    <Popover open={openEmprestimo} onOpenChange={setOpenEmprestimo}>
+                        <PopoverTrigger asChild className="cursor-pointer">
+                            <Button
+                                variant="outline"
+                                id="date"
+                                className="w-48 justify-between font-normal"
+                            >
+                                {dataEmprestimoDate ? dataEmprestimoDate.toLocaleDateString() : "Selecione a data"}
+                                <ChevronDownIcon />
+                            </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="z-50">
+                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
                             <Calendar
-                                defaultValue={dataEmprestimo}
-                                onSelect={(date: Date) => {
-                                    const iso = toISODateString(date);
-                                    setDataEmprestimo(iso);
-                                    setShowEmprestimoCal(false);
-                                }}
+                                mode="single"
+                                selected={dataEmprestimoDate}
+                                onSelect={(date) => setDataEmprestimoDate(date)}
+                                captionLayout="dropdown"
                             />
                         </PopoverContent>
                     </Popover>
@@ -195,13 +188,26 @@ export default function CreateEmprestimo() {
                     <label htmlFor="dataDevolucao" className="block text-lg font-semibold mb-2">
                         Data de Devolução
                     </label>
-                    <input
-                        id="dataDevolucao"
-                        type="date"
-                        value={dataDevolucao}
-                        onChange={(e) => setDataDevolucao(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                    />
+                    <Popover open={openDevolucao} onOpenChange={setOpenDevolucao}>
+                        <PopoverTrigger asChild className="cursor-pointer">
+                            <Button
+                                variant="outline"
+                                id="date"
+                                className="w-48 justify-between font-normal"
+                            >
+                                {dataDevolucaoDate ? dataDevolucaoDate.toLocaleDateString() : "Selecione a data"}
+                                <ChevronDownIcon />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                            <Calendar
+                                mode="single"
+                                selected={dataDevolucaoDate}
+                                onSelect={setDataDevolucaoDate}
+                                captionLayout="dropdown"
+                            />
+                        </PopoverContent>
+                    </Popover>
                 </div>
 
                 {/* Status */}

@@ -9,24 +9,29 @@ import {Membro} from "@/interface/MembrosProps";
 import EmprestimoResponseDTO from "@/interface/EmprestimoResponseDTO";
 import {useAuth} from "@/resources/users/authentication.resourse";
 import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {Button} from "@/components/ui/button";
+import {ChevronDownIcon} from "lucide-react";
+import {Calendar} from "@/components/ui/calendar";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 export default function EditEmprestimo() {
     const router = useRouter();
     const params = useParams();
     const id = Number(params?.id);
 
-    const hoje = new Date().toISOString().split("T")[0];
-
-    const [livroId, setLivroId] = useState<number | "">("");
-    const [membroId, setMembroId] = useState<number | "">("");
-    const [dataEmprestimo, setDataEmprestimo] = useState<string>(hoje);
-    const [dataDevolucao, setDataDevolucao] = useState<string>("");
+    const [livroId, setLivroId] = useState<string>("");
+    const [membroId, setMembroId] = useState<string>("");
+    const [dataEmprestimo, setDataEmprestimo] = useState<Date | undefined>(new Date());
+    const [dataDevolucao, setDataDevolucao] = useState<Date | undefined>(undefined);
     const [status, setStatus] = useState<boolean>(true);
     const [livros, setLivros] = useState<Livro[]>([]);
     const [membros, setMembros] = useState<Membro[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [fetchError, setFetchError] = useState<string | null>(null);
+    const [openEmprestimo, setOpenEmprestimo] = useState<boolean>(false);
+    const [openDevolucao, setOpenDevolucao] = useState<boolean>(false);
 
     const auth = useAuth();
 
@@ -63,18 +68,22 @@ export default function EditEmprestimo() {
         async function fetchEmprestimo() {
             try {
                 const userSession = auth.getUserSession();
-                const res = await api.get<EmprestimoResponseDTO>(`/v1/emprestimos/${id}`,
-                    {
-                        headers: {
-                            "Authorization": `Bearer ${userSession?.accessToken}`
-                        }
-                    });
+
+                // garante que já tem livros e membros antes
+                if (livros.length === 0 || membros.length === 0) return;
+
+                const res = await api.get<EmprestimoResponseDTO>(`/v1/emprestimos/${id}`, {
+                    headers: {
+                        "Authorization": `Bearer ${userSession?.accessToken}`,
+                    },
+                });
+
                 const emp = res.data;
 
-                setLivroId(emp.livros.id);
-                setMembroId(emp.membros.id);
-                setDataEmprestimo(emp.dataEmprestimo.split("T")[0]);
-                setDataDevolucao(emp.dataDevolucao ? emp.dataDevolucao.split("T")[0] : "");
+                setLivroId(emp.livros.id.toString());
+                setMembroId(emp.membros.id.toString());
+                setDataEmprestimo(new Date(emp.dataEmprestimo));
+                setDataDevolucao(emp.dataDevolucao ? new Date(emp.dataDevolucao) : undefined);
                 setStatus(emp.status);
             } catch (err) {
                 console.error(err);
@@ -83,7 +92,13 @@ export default function EditEmprestimo() {
         }
 
         fetchEmprestimo();
-    }, [id]);
+    }, [id, livros, membros]);
+
+    function dateToIsoAtMidnightLocal(date?: Date | undefined) {
+        if (!date) return null;
+        const localMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        return localMidnight.toISOString();
+    }
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -92,17 +107,15 @@ export default function EditEmprestimo() {
         const userSession = auth.getUserSession();
 
         try {
-            const dataEmpISOUTC = new Date(dataEmprestimo + "T00:00:00Z").toISOString();
-            const dataDevISOUTC = dataDevolucao
-                ? new Date(dataDevolucao + "T00:00:00Z").toISOString()
-                : null;
+            const dataEmprestimoISO = dateToIsoAtMidnightLocal(dataEmprestimo);
+            const dataDevolucaoISO = dateToIsoAtMidnightLocal(dataDevolucao);
 
             await api.put("/v1/emprestimos", {
                 id,
                 livros: Number(livroId),
                 membros: Number(membroId),
-                dataEmprestimo: dataEmpISOUTC,
-                dataDevolucao: dataDevISOUTC,
+                dataEmprestimo: dataEmprestimoISO,
+                dataDevolucao: dataDevolucaoISO,
                 status,
             },
                 {
@@ -149,105 +162,112 @@ export default function EditEmprestimo() {
                     <label htmlFor="livro" className="block text-lg font-semibold mb-2 cursor-pointer">
                         Livro
                     </label>
-                    <div className="relative">
-                        <select
+                    <Select
+                        value={livroId}
+                        onValueChange={(value) => setLivroId(value)}
+                        name="livro"
+                        required
+                    >
+                        <SelectTrigger
                             id="livro"
-                            value={livroId}
-                            onChange={(e) => setLivroId(Number(e.target.value))}
-                            required
-                            className="cursor-pointer appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-10 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                            className="w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-4 text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                         >
-                            <option value="">Selecione um livro</option>
+                            <SelectValue placeholder="Selecione um livro" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border border-gray-200 rounded-md mt-1 shadow-lg">
                             {livros.map((livro) => (
-                                <option key={livro.id} value={livro.id}>
+                                <SelectItem
+                                    key={livro.id}
+                                    value={livro.id.toString()}
+                                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                >
                                     {livro.titulo}
-                                </option>
+                                </SelectItem>
                             ))}
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <svg
-                                className="h-5 w-5 text-gray-500"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                            >
-                                <path
-                                    fillRule="evenodd"
-                                    d="M5.23 7.21a.75.75 0 011.06.02L10
-                     10.94l3.71-3.71a.75.75 0 111.06
-                     1.06l-4.24 4.24a.75.75 0 01-1.06
-                     0L5.21 8.29a.75.75 0 01.02-1.08z"
-                                    clipRule="evenodd"
-                                />
-                            </svg>
-                        </div>
-                    </div>
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 <div>
                     <label htmlFor="membro" className="block text-lg font-semibold mb-2 cursor-pointer">
                         Membro
                     </label>
-                    <div className="relative">
-                        <select
+                    <Select
+                        value={membroId}
+                        onValueChange={(value) => setMembroId(value)}
+                        name="membro"
+                        required
+                    >
+                        <SelectTrigger
                             id="membro"
-                            value={membroId}
-                            onChange={(e) => setMembroId(Number(e.target.value))}
-                            required
-                            className="cursor-pointer appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-10 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                            className="w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-4 text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                         >
-                            <option value="">Selecione um membro</option>
+                            <SelectValue placeholder="Selecione um membro" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border border-gray-200 rounded-md mt-1 shadow-lg">
                             {membros.map((membro) => (
-                                <option key={membro.id} value={membro.id}>
+                                <SelectItem
+                                    key={membro.id}
+                                    value={membro.id.toString()}
+                                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer "
+                                >
                                     {membro.nome}
-                                </option>
+                                </SelectItem>
                             ))}
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <svg
-                                className="h-5 w-5 text-gray-500"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                            >
-                                <path
-                                    fillRule="evenodd"
-                                    d="M5.23 7.21a.75.75 0 011.06.02L10
-                     10.94l3.71-3.71a.75.75 0 111.06
-                     1.06l-4.24 4.24a.75.75 0 01-1.06
-                     0L5.21 8.29a.75.75 0 01.02-1.08z"
-                                    clipRule="evenodd"
-                                />
-                            </svg>
-                        </div>
-                    </div>
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 <div>
                     <label htmlFor="dataEmprestimo" className="block text-lg font-semibold mb-2">
                         Data de Empréstimo
                     </label>
-                    <input
-                        id="dataEmprestimo"
-                        type="date"
-                        value={dataEmprestimo}
-                        onChange={(e) => setDataEmprestimo(e.target.value)}
-                        required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                    />
+                    <Popover open={openEmprestimo} onOpenChange={setOpenEmprestimo}>
+                        <PopoverTrigger asChild className="cursor-pointer">
+                            <Button
+                                variant="outline"
+                                id="date"
+                                className="w-48 justify-between font-normal"
+                            >
+                                {dataEmprestimo ? dataEmprestimo.toLocaleDateString() : "Selecione a data"}
+                                <ChevronDownIcon />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                            <Calendar
+                                mode="single"
+                                selected={dataEmprestimo}
+                                onSelect={(date) => setDataEmprestimo(date)}
+                                captionLayout="dropdown"
+                            />
+                        </PopoverContent>
+                    </Popover>
                 </div>
 
                 <div>
                     <label htmlFor="dataDevolucao" className="block text-lg font-semibold mb-2">
                         Data de Devolução
                     </label>
-                    <input
-                        id="dataDevolucao"
-                        type="date"
-                        value={dataDevolucao}
-                        onChange={(e) => setDataDevolucao(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                    />
+                    <Popover open={openDevolucao} onOpenChange={setOpenDevolucao}>
+                        <PopoverTrigger asChild className="cursor-pointer">
+                            <Button
+                                variant="outline"
+                                id="date"
+                                className="w-48 justify-between font-normal"
+                            >
+                                {dataDevolucao ? dataDevolucao.toLocaleDateString() : "Selecione a data"}
+                                <ChevronDownIcon />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                            <Calendar
+                                mode="single"
+                                selected={dataDevolucao}
+                                onSelect={setDataDevolucao}
+                                captionLayout="dropdown"
+                            />
+                        </PopoverContent>
+                    </Popover>
                 </div>
 
                 <div>

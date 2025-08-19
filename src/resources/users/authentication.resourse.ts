@@ -6,7 +6,7 @@ import NoopStorage from "@/resources/users/interfaces/noop.storage";
 
 class AuthService {
     private storage: StorageLike;
-    baseURL: string = "http://localhost:8088/v1/funcionario";
+    baseURL: string = "https://sistemadebibliotecaapi.onrender.com/v1/funcionario";
     static AUTH_PARAMS: string = "_auth";
 
     constructor() {
