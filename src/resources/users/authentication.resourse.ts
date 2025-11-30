@@ -6,7 +6,7 @@ import NoopStorage from "@/resources/users/interfaces/noop.storage";
 
 class AuthService {
     private storage: StorageLike;
-    baseURL: string = "https://sistemabiblioteca.alberinando.com/v1/funcionario";
+    baseURL: string = "https://bibliotecaapi.alberinando.net/v1/funcionario";
     static AUTH_PARAMS: string = "_auth";
 
     constructor() {
