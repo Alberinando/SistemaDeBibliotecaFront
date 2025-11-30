@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "https://sistemadebibliotecaapi.onrender.com",
+    baseURL: "https://bibliotecaapi.alberinando.net",
 });
 
 export default api;
