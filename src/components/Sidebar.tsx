@@ -43,7 +43,10 @@ const Sidebar: React.FC = () => {
                         Biblioteca
                     </span>
                 </div>
-                {!isOpen && <NotificationBell />}
+                {/* Single NotificationBell - shown on mobile when sidebar is closed */}
+                <div className={isOpen ? 'hidden' : 'block md:hidden'}>
+                    <NotificationBell />
+                </div>
             </div>
 
             {/* Mobile Overlay */}
@@ -102,6 +105,7 @@ const Sidebar: React.FC = () => {
                             <span className="text-[10px] uppercase tracking-wider text-indigo-300 font-semibold">
                                 Perfil
                             </span>
+                            {/* NotificationBell for desktop only */}
                             <div className="hidden md:block">
                                 <NotificationBell />
                             </div>
@@ -178,4 +182,3 @@ const Sidebar: React.FC = () => {
 };
 
 export default Sidebar;
-

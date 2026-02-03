@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { FiBell, FiCheck, FiClock, FiBookOpen } from 'react-icons/fi';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useWebSocket } from '@/hooks/useWebSocket';
@@ -8,24 +8,14 @@ import { ptBR } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function NotificationBell() {
-    const [isMounted, setIsMounted] = useState(false);
     const { notificacoes, unreadCount, markAsRead, markAllAsRead } = useWebSocket();
-
-    // Evitar problemas de hidratação - só renderizar conteúdo dinâmico após montar
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
-
-    // Durante SSR e antes de montar, usar valores estáveis
-    const displayUnreadCount = isMounted ? unreadCount : 0;
-    const displayNotificacoes = isMounted ? notificacoes : [];
 
     return (
         <Popover>
             <PopoverTrigger asChild>
                 <button className="relative p-2 text-indigo-200 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 group">
-                    <FiBell size={20} className={displayUnreadCount > 0 ? "animate-wiggle" : ""} />
-                    {displayUnreadCount > 0 && (
+                    <FiBell size={20} className={unreadCount > 0 ? "animate-wiggle" : ""} />
+                    {unreadCount > 0 && (
                         <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#1e1b4b] animate-pulse" />
                     )}
                 </button>
@@ -36,12 +26,12 @@ export default function NotificationBell() {
                     <div>
                         <h3 className="font-semibold text-gray-800">Notificações</h3>
                         <p className="text-xs text-gray-500">
-                            {displayUnreadCount > 0
-                                ? `Você tem ${displayUnreadCount} nova${displayUnreadCount !== 1 ? 's' : ''}`
+                            {unreadCount > 0
+                                ? `Você tem ${unreadCount} nova${unreadCount !== 1 ? 's' : ''}`
                                 : 'Nenhuma nova notificação'}
                         </p>
                     </div>
-                    {displayUnreadCount > 0 && (
+                    {unreadCount > 0 && (
                         <button
                             onClick={markAllAsRead}
                             className="text-xs text-indigo-600 hover:text-indigo-700 font-medium hover:underline cursor-pointer"
@@ -53,7 +43,7 @@ export default function NotificationBell() {
 
                 {/* List */}
                 <div className="max-h-[400px] overflow-y-auto">
-                    {displayNotificacoes.length === 0 ? (
+                    {notificacoes.length === 0 ? (
                         <div className="p-8 text-center text-gray-400">
                             <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                                 <FiBell size={20} />
@@ -63,7 +53,7 @@ export default function NotificationBell() {
                     ) : (
                         <div className="divide-y divide-gray-50">
                             <AnimatePresence>
-                                {displayNotificacoes.map((notificacao) => (
+                                {notificacoes.map((notificacao) => (
                                     <motion.div
                                         key={notificacao.id}
                                         initial={{ opacity: 0 }}
