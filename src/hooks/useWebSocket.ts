@@ -6,6 +6,16 @@ import { useAuth } from "@/resources/users/authentication.resourse";
 import api from '@/services/api';
 import { Notificacao } from '@/interface/NotificacaoProps';
 
+// URL base da API (usa variável de ambiente ou fallback)
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://bibliotecaapi.alberinando.net";
+
+// Converte URL HTTP(S) para WS URL compatível com SockJS
+function getWebSocketUrl(): string {
+    // SockJS precisa da URL HTTP(S), não WS
+    // Ele faz a conversão internamente
+    return `${API_BASE_URL}/ws-notificacoes`;
+}
+
 export function useWebSocket() {
     // Definir estado inicial como array vazio para garantir que sempre seja iterável
     const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
@@ -39,8 +49,9 @@ export function useWebSocket() {
         // Buscar notificações iniciais ao montar
         fetchInitialNotifications();
 
-        // Configurar WebSocket
-        const socket = new SockJS('http://localhost:8080/ws-notificacoes');
+        // Configurar WebSocket usando URL da variável de ambiente
+        const wsUrl = getWebSocketUrl();
+        const socket = new SockJS(wsUrl);
         const client = new Client({
             webSocketFactory: () => socket,
             connectHeaders: {

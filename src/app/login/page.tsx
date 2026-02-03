@@ -147,6 +147,8 @@ export default function LoginPage() {
                                     <input
                                         type="text"
                                         id="login"
+                                        name="login"
+                                        autoComplete="username"
                                         value={login}
                                         onChange={(e) => setLogin(e.target.value)}
                                         required
@@ -168,6 +170,8 @@ export default function LoginPage() {
                                     <input
                                         type="password"
                                         id="senha"
+                                        name="senha"
+                                        autoComplete="current-password"
                                         value={senha}
                                         onChange={(e) => setSenha(e.target.value)}
                                         required
