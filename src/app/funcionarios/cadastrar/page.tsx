@@ -4,8 +4,10 @@ import { useState, FormEvent, useRef, useEffect } from 'react';
 import api from '@/services/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import {useAuth} from "@/resources/users/authentication.resourse";
+import { useAuth } from "@/resources/users/authentication.resourse";
 import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
+import { FiUser, FiBriefcase, FiLogIn, FiLock, FiArrowLeft, FiSave } from 'react-icons/fi';
+import { motion } from 'framer-motion';
 
 export default function CreateFuncionario() {
     const router = useRouter();
@@ -120,77 +122,145 @@ export default function CreateFuncionario() {
 
     return (
         <AuthenticatedPage>
-        <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow max-md:mt-11">
-            <h1 className="text-2xl font-semibold mb-4">Cadastrar Novo Funcionário</h1>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                {error && <p className="text-red-500">{error}</p>}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="max-w-2xl mx-auto"
+            >
+                <div className="page-container">
+                    {/* Header */}
+                    <div className="flex items-center space-x-4 mb-8">
+                        <Link
+                            href="/funcionarios"
+                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
+                        >
+                            <FiArrowLeft size={20} />
+                        </Link>
+                        <div>
+                            <h1 className="page-title">Cadastrar Novo Funcionário</h1>
+                            <p className="text-gray-500 text-sm mt-1">
+                                Preencha os dados do funcionário abaixo
+                            </p>
+                        </div>
+                    </div>
 
-                <div>
-                    <label className="block text-sm font-medium mb-1">Nome</label>
-                    <input
-                        ref={nomeRef}
-                        type="text"
-                        value={nome}
-                        onChange={e => setNome(e.target.value)}
-                        required
-                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Error Message */}
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-3"
+                            >
+                                <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-white text-xs">!</span>
+                                </div>
+                                <p className="text-red-600 text-sm">{error}</p>
+                            </motion.div>
+                        )}
 
-                <div>
-                    <label className="block text-sm font-medium mb-1">Cargo</label>
-                    <input
-                        ref={cargoRef}
-                        type="text"
-                        value={cargo}
-                        onChange={e => setCargo(e.target.value)}
-                        required
-                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
+                        {/* Nome */}
+                        <div className="form-group">
+                            <label className="form-label flex items-center space-x-2">
+                                <FiUser className="text-indigo-500" />
+                                <span>Nome Completo</span>
+                            </label>
+                            <input
+                                ref={nomeRef}
+                                type="text"
+                                value={nome}
+                                onChange={e => setNome(e.target.value)}
+                                required
+                                placeholder="Digite o nome completo"
+                                className="input-modern"
+                            />
+                        </div>
 
-                <div>
-                    <label className="block text-sm font-medium mb-1">Login</label>
-                    <input
-                        ref={loginRef}
-                        type="text"
-                        value={login}
-                        onChange={e => setLogin(e.target.value)}
-                        required
-                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
+                        {/* Cargo */}
+                        <div className="form-group">
+                            <label className="form-label flex items-center space-x-2">
+                                <FiBriefcase className="text-indigo-500" />
+                                <span>Cargo</span>
+                            </label>
+                            <input
+                                ref={cargoRef}
+                                type="text"
+                                value={cargo}
+                                onChange={e => setCargo(e.target.value)}
+                                required
+                                placeholder="Ex: Bibliotecário, Atendente..."
+                                className="input-modern"
+                            />
+                        </div>
 
-                <div>
-                    <label className="block text-sm font-medium mb-1">Senha</label>
-                    <input
-                        ref={senhaRef}
-                        type="password"
-                        value={senha}
-                        onChange={e => setSenha(e.target.value)}
-                        required
-                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
+                        {/* Login */}
+                        <div className="form-group">
+                            <label className="form-label flex items-center space-x-2">
+                                <FiLogIn className="text-indigo-500" />
+                                <span>Login</span>
+                            </label>
+                            <input
+                                ref={loginRef}
+                                type="text"
+                                value={login}
+                                onChange={e => setLogin(e.target.value)}
+                                required
+                                placeholder="Nome de usuário para acesso"
+                                className="input-modern"
+                            />
+                        </div>
 
-                <div className="flex justify-between items-center mt-6">
-                    <Link
-                        href="/funcionarios"
-                        className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 cursor-pointer"
-                    >
-                        Voltar
-                    </Link>
-                    <button
-                        ref={submitButtonRef}
-                        type="submit"
-                        disabled={loading}
-                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 cursor-pointer"
-                    >
-                        {loading ? 'Salvando...' : 'Cadastrar'}
-                    </button>
+                        {/* Senha */}
+                        <div className="form-group">
+                            <label className="form-label flex items-center space-x-2">
+                                <FiLock className="text-indigo-500" />
+                                <span>Senha</span>
+                            </label>
+                            <input
+                                ref={senhaRef}
+                                type="password"
+                                value={senha}
+                                onChange={e => setSenha(e.target.value)}
+                                required
+                                placeholder="Digite a senha de acesso"
+                                className="input-modern"
+                            />
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+                            <Link
+                                href="/funcionarios"
+                                className="btn-ghost flex items-center space-x-2"
+                            >
+                                <FiArrowLeft />
+                                <span>Voltar</span>
+                            </Link>
+                            <button
+                                ref={submitButtonRef}
+                                type="submit"
+                                disabled={loading}
+                                className="btn-success flex items-center space-x-2 cursor-pointer"
+                            >
+                                {loading ? (
+                                    <>
+                                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span>Salvando...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <FiSave />
+                                        <span>Cadastrar</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </form>
-        </div>
-            </AuthenticatedPage>
+            </motion.div>
+        </AuthenticatedPage>
     );
 }

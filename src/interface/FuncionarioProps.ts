@@ -8,6 +8,7 @@ export interface Funcionario {
 interface FuncionarioPage {
     content: Funcionario[];
     totalPages: number;
+    totalElements?: number;
     number: number;
 }
 

@@ -1,17 +1,19 @@
 "use client"
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '@/services/api';
-import { FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiPlus, FiRepeat, FiChevronLeft, FiChevronRight, FiAlertTriangle } from 'react-icons/fi';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Emprestimo, EmprestimoPage } from "@/interface/EmprestimoPros";
-import {useAuth} from "@/resources/users/authentication.resourse";
+import { useAuth } from "@/resources/users/authentication.resourse";
 import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ListaEmprestimos() {
     const [emprestimos, setEmprestimos] = useState<Emprestimo[]>([]);
     const [page, setPage] = useState<number>(0);
     const [totalPages, setTotalPages] = useState<number>(0);
+    const [totalElements, setTotalElements] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState<boolean>(false);
@@ -37,6 +39,7 @@ export default function ListaEmprestimos() {
             }));
             setEmprestimos(emprestimosTransformed);
             setTotalPages(response.data.totalPages);
+            setTotalElements(response.data.totalElements || response.data.content.length);
         } catch (err) {
             console.error(err);
             setError('Falha ao carregar empréstimos.');
@@ -91,12 +94,11 @@ export default function ListaEmprestimos() {
         if (!toDeleteId) return;
         const userSession = auth.getUserSession();
         try {
-            await api.delete(`/v1/emprestimos/${toDeleteId}`,
-                {
-                    headers: {
-                        "Authorization": `Bearer ${userSession?.accessToken}`
-                    }
-                });
+            await api.delete(`/v1/emprestimos/${toDeleteId}`, {
+                headers: {
+                    "Authorization": `Bearer ${userSession?.accessToken}`
+                }
+            });
             setShowModal(false);
             setToDeleteId(null);
             fetchEmprestimos();
@@ -106,127 +108,244 @@ export default function ListaEmprestimos() {
         }
     };
 
+    // Loading Skeleton
+    const LoadingSkeleton = () => (
+        <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center space-x-4 p-4">
+                    <div className="skeleton h-6 w-12 rounded" />
+                    <div className="skeleton h-6 flex-1 rounded" />
+                    <div className="skeleton h-6 w-32 rounded" />
+                    <div className="skeleton h-6 w-24 rounded" />
+                    <div className="skeleton h-6 w-24 rounded" />
+                    <div className="skeleton h-6 w-20 rounded" />
+                    <div className="skeleton h-8 w-20 rounded" />
+                </div>
+            ))}
+        </div>
+    );
+
+    // Empty State
+    const EmptyState = () => (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="empty-state"
+        >
+            <div className="empty-state-icon">
+                <FiRepeat size={36} />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                Nenhum empréstimo registrado
+            </h3>
+            <p className="text-gray-500 mb-6">
+                Comece registrando o primeiro empréstimo
+            </p>
+            <Link
+                href="/emprestimos/cadastrar"
+                className="btn-success inline-flex items-center space-x-2"
+            >
+                <FiPlus />
+                <span>Cadastrar Primeiro Empréstimo</span>
+            </Link>
+        </motion.div>
+    );
+
     return (
         <AuthenticatedPage>
-            <div className="p-6 bg-white rounded-lg shadow">
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-semibold">Lista de Empréstimos</h1>
-                <Link href="/emprestimos/cadastrar" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    Cadastrar Empréstimo
-                </Link>
-            </div>
-
-            {loading ? (
-                <p>Carregando empréstimos...</p>
-            ) : error ? (
-                <p className="text-red-500">{error}</p>
-            ) : emprestimos.length === 0 ? (
-                <div className="text-center py-10">
-                    <p className="mb-4">Não há empréstimos cadastrados.</p>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="page-container"
+            >
+                {/* Header */}
+                <div className="page-header">
+                    <div>
+                        <h1 className="page-title">Lista de Empréstimos</h1>
+                        {!loading && !error && emprestimos.length > 0 && (
+                            <p className="text-gray-500 text-sm mt-1">
+                                {totalElements} empréstimo{totalElements !== 1 ? 's' : ''} registrado{totalElements !== 1 ? 's' : ''}
+                            </p>
+                        )}
+                    </div>
                     <Link
                         href="/emprestimos/cadastrar"
-                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                        className="btn-gradient flex items-center space-x-2"
                     >
-                        Cadastrar Primeiro Empréstimo
+                        <FiPlus />
+                        <span>Cadastrar Empréstimo</span>
                     </Link>
                 </div>
-            ) : (
-                <>
-                    <table className="min-w-full table-auto border-collapse mb-4">
-                        <thead>
-                        <tr className="bg-gray-100">
-                            <th className="px-4 py-2 text-left">ID</th>
-                            <th className="px-4 py-2 text-left">Livro</th>
-                            <th className="px-4 py-2 text-left">Membro</th>
-                            <th className="px-4 py-2 text-left">Data de Empréstimo</th>
-                            <th className="px-4 py-2 text-left">Data de Devolução</th>
-                            <th className="px-4 py-2 text-left">Status</th>
-                            <th className="px-4 py-2 text-center">Ações</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {emprestimos.map(emprestimo => (
-                            <tr key={emprestimo.id} className="border-b hover:bg-gray-50">
-                                <td className="px-4 py-2">{emprestimo.id}</td>
-                                <td className="px-4 py-2">{emprestimo.livros.titulo}</td>
-                                <td className="px-4 py-2">{emprestimo.membros.nome}</td>
-                                <td className="px-4 py-2">
-                                    {new Date(emprestimo.dataEmprestimo).toLocaleDateString()}
-                                </td>
-                                <td className="px-4 py-2">
-                                    {emprestimo.dataDevolucao === ''
-                                        ? ''
-                                        : new Date(emprestimo.dataDevolucao).toLocaleDateString()}
-                                </td>
-                                <td className="px-4 py-2">{emprestimo.status ? 'Ativo' : 'Encerrado'}</td>
-                                <td className="px-4 py-2 flex justify-center space-x-3">
-                                    <Link href={`/emprestimos/${emprestimo.id}`} className="hover:text-blue-600">
-                                        <FiEdit2 size={20} />
-                                    </Link>
-                                    <button
-                                        onClick={() => {
-                                            setShowModal(true);
-                                            setToDeleteId(emprestimo.id);
-                                        }}
-                                        className="hover:text-red-600 cursor-pointer"
-                                    >
-                                        <FiTrash2 size={20} />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
 
-                    <div className="flex justify-between items-center">
+                {/* Content */}
+                {loading ? (
+                    <LoadingSkeleton />
+                ) : error ? (
+                    <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <FiAlertTriangle className="text-red-500 text-2xl" />
+                        </div>
+                        <p className="text-red-500 font-medium">{error}</p>
                         <button
-                            onClick={() => setPage(prev => Math.max(prev - 1, 0))}
-                            disabled={page === 0}
-                            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50 cursor-pointer"
+                            onClick={() => fetchEmprestimos()}
+                            className="mt-4 btn-ghost"
                         >
-                            Anterior
-                        </button>
-                        <span>
-              Página {page + 1} de {totalPages}
-            </span>
-                        <button
-                            onClick={() => setPage(prev => Math.min(prev + 1, totalPages - 1))}
-                            disabled={page + 1 >= totalPages}
-                            className="px-3 py-1 bg-blue-200 rounded disabled:opacity-50 cursor-pointer"
-                        >
-                            Próxima
+                            Tentar novamente
                         </button>
                     </div>
-                </>
-            )}
+                ) : emprestimos.length === 0 ? (
+                    <EmptyState />
+                ) : (
+                    <>
+                        {/* Table */}
+                        <div className="overflow-x-auto rounded-xl border border-gray-200/50">
+                            <table className="table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Livro</th>
+                                        <th>Membro</th>
+                                        <th>Data Empréstimo</th>
+                                        <th>Data Devolução</th>
+                                        <th>Status</th>
+                                        <th className="text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {emprestimos.map((emprestimo, index) => (
+                                        <motion.tr
+                                            key={emprestimo.id}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.03 }}
+                                        >
+                                            <td className="font-mono text-gray-500">
+                                                #{emprestimo.id}
+                                            </td>
+                                            <td className="font-medium text-gray-800">
+                                                {emprestimo.livros.titulo}
+                                            </td>
+                                            <td>
+                                                <div className="flex items-center space-x-2">
+                                                    <div className="w-7 h-7 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                                                        {emprestimo.membros.nome.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <span className="text-gray-600">
+                                                        {emprestimo.membros.nome}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="text-gray-600">
+                                                {new Date(emprestimo.dataEmprestimo).toLocaleDateString('pt-BR')}
+                                            </td>
+                                            <td className="text-gray-600">
+                                                {emprestimo.dataDevolucao === ''
+                                                    ? <span className="text-gray-400">—</span>
+                                                    : new Date(emprestimo.dataDevolucao).toLocaleDateString('pt-BR')}
+                                            </td>
+                                            <td>
+                                                <span className={`badge ${emprestimo.status ? 'badge-success' : 'badge-warning'}`}>
+                                                    {emprestimo.status ? 'Ativo' : 'Encerrado'}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="flex items-center justify-center space-x-2">
+                                                    <Link
+                                                        href={`/emprestimos/${emprestimo.id}`}
+                                                        className="action-btn action-btn-edit"
+                                                        title="Editar"
+                                                    >
+                                                        <FiEdit2 size={18} />
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowModal(true);
+                                                            setToDeleteId(emprestimo.id);
+                                                        }}
+                                                        className="action-btn action-btn-delete cursor-pointer"
+                                                        title="Excluir"
+                                                    >
+                                                        <FiTrash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </motion.tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
 
-            {showModal && (
-                <div className="fixed inset-0 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-black opacity-70"></div>
-                    <div className="relative z-20 bg-white p-6 rounded-lg shadow-lg w-80">
-                        <h2 className="text-lg font-semibold mb-4">Confirmar Exclusão</h2>
-                        <p className="mb-6">Tem certeza que deseja excluir este empréstimo?</p>
-                        <div className="flex justify-end space-x-3">
+                        {/* Pagination */}
+                        <div className="pagination">
                             <button
-                                onClick={() => {
-                                    setShowModal(false);
-                                    setToDeleteId(null);
-                                }}
-                                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 cursor-pointer"
+                                onClick={() => setPage(prev => Math.max(prev - 1, 0))}
+                                disabled={page === 0}
+                                className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
-                                Cancelar
+                                <FiChevronLeft />
+                                <span>Anterior</span>
                             </button>
+                            <div className="pagination-info">
+                                Página {page + 1} de {totalPages || 1}
+                            </div>
                             <button
-                                onClick={handleDelete}
-                                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
+                                onClick={() => setPage(prev => Math.min(prev + 1, totalPages - 1))}
+                                disabled={page + 1 >= totalPages}
+                                className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
-                                Excluir
+                                <span>Próxima</span>
+                                <FiChevronRight />
                             </button>
                         </div>
-                    </div>
-                </div>
-            )}
-            </div>
+                    </>
+                )}
+
+                {/* Delete Modal */}
+                <AnimatePresence>
+                    {showModal && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="modal-overlay"
+                        >
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                className="modal-content"
+                            >
+                                <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <FiTrash2 className="text-red-500 text-2xl" />
+                                </div>
+                                <h2 className="text-xl font-bold text-center mb-2">
+                                    Confirmar Exclusão
+                                </h2>
+                                <p className="text-gray-500 text-center mb-6">
+                                    Tem certeza que deseja excluir este empréstimo? Esta ação não pode ser desfeita.
+                                </p>
+                                <div className="flex space-x-3">
+                                    <button
+                                        onClick={() => {
+                                            setShowModal(false);
+                                            setToDeleteId(null);
+                                        }}
+                                        className="flex-1 btn-ghost cursor-pointer"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        onClick={handleDelete}
+                                        className="flex-1 btn-danger cursor-pointer"
+                                    >
+                                        Excluir
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.div>
         </AuthenticatedPage>
     );
 }

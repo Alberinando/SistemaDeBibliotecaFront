@@ -11,6 +11,7 @@ export interface Livro {
 export interface LivroPage {
     content: Livro[];
     totalPages: number;
+    totalElements?: number;
     number: number;
 }
 

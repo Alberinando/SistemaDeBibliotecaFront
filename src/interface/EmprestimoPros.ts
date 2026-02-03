@@ -18,5 +18,6 @@ export interface Emprestimo {
 export interface EmprestimoPage {
     content: Emprestimo[];
     totalPages: number;
+    totalElements?: number;
     number: number;
 }
