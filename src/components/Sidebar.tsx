@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import menuItems from "@/util/Options";
@@ -10,10 +10,17 @@ import NotificationBell from "@/components/ui/NotificationBell";
 
 const Sidebar: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
     const pathname = usePathname();
     const auth = useAuth();
     const router = useRouter();
-    const user = auth.getUserSession();
+
+    // Only access localStorage after component mounts (client-side only)
+    const user = isMounted ? auth.getUserSession() : null;
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     function logout() {
         auth.invalidateSession();
@@ -44,9 +51,11 @@ const Sidebar: React.FC = () => {
                     </span>
                 </div>
                 {/* Single NotificationBell - shown on mobile when sidebar is closed */}
-                <div className={isOpen ? 'hidden' : 'block md:hidden'}>
-                    <NotificationBell />
-                </div>
+                {isMounted && (
+                    <div className={isOpen ? 'hidden' : 'block md:hidden'}>
+                        <NotificationBell />
+                    </div>
+                )}
             </div>
 
             {/* Mobile Overlay */}
@@ -99,7 +108,7 @@ const Sidebar: React.FC = () => {
                 </div>
 
                 {/* User Info & Notifications for Desktop */}
-                {user && (
+                {isMounted && user && (
                     <div className="relative px-3 py-3 border-b border-white/10 shrink-0">
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-[10px] uppercase tracking-wider text-indigo-300 font-semibold">

@@ -228,6 +228,13 @@ export default function ListaMembros() {
                                             <td>
                                                 <div className="flex items-center justify-center space-x-2">
                                                     <Link
+                                                        href={`/membros/${membro.id}/historico`}
+                                                        className="action-btn text-blue-500 hover:bg-blue-50 hover:text-blue-700"
+                                                        title="Histórico"
+                                                    >
+                                                        <FiClock size={18} />
+                                                    </Link>
+                                                    <Link
                                                         href={`/membros/${membro.id}`}
                                                         className="action-btn action-btn-edit"
                                                         title="Editar"
