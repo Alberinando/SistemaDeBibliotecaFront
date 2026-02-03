@@ -22,15 +22,28 @@ export function useWebSocket() {
     const [unreadCount, setUnreadCount] = useState<number>(0);
     const [connected, setConnected] = useState<boolean>(false);
     const clientRef = useRef<Client | null>(null);
+    const isConnectingRef = useRef<boolean>(false);
     const auth = useAuth();
     const userSession = auth.getUserSession();
 
+    // Usar ref para armazenar valores estáveis do token e userId
+    const accessTokenRef = useRef<string | null>(null);
+    const userIdRef = useRef<number | null>(null);
+
+    // Atualizar refs quando userSession mudar
+    useEffect(() => {
+        accessTokenRef.current = userSession?.accessToken ?? null;
+        userIdRef.current = userSession?.id ?? null;
+    }, [userSession?.accessToken, userSession?.id]);
+
     // Carregar notificações iniciais via API REST
     const fetchInitialNotifications = useCallback(async () => {
-        if (!userSession?.accessToken || !userSession.id) return;
+        const token = accessTokenRef.current;
+        const userId = userIdRef.current;
+        if (!token || !userId) return;
         try {
-            const response = await api.get<Notificacao[]>(`/v1/notificacoes/funcionario/${userSession.id}`, {
-                headers: { "Authorization": `Bearer ${userSession.accessToken}` }
+            const response = await api.get<Notificacao[]>(`/v1/notificacoes/funcionario/${userId}`, {
+                headers: { "Authorization": `Bearer ${token}` }
             });
             // Garantir que a resposta seja um array
             const data = Array.isArray(response.data) ? response.data : [];
@@ -41,27 +54,35 @@ export function useWebSocket() {
             // Em caso de erro, definir como array vazio para evitar problemas de renderização
             setNotificacoes([]);
         }
-    }, [userSession]);
+    }, []);
 
     useEffect(() => {
-        if (!userSession?.accessToken) return;
+        const token = userSession?.accessToken;
+        if (!token) return;
+
+        // Evitar múltiplas conexões simultâneas
+        if (isConnectingRef.current || clientRef.current?.active) {
+            return;
+        }
+
+        isConnectingRef.current = true;
 
         // Buscar notificações iniciais ao montar
         fetchInitialNotifications();
 
         // Configurar WebSocket usando URL da variável de ambiente
         const wsUrl = getWebSocketUrl();
-        
+
         // Contador de tentativas de reconexão
         let reconnectAttempts = 0;
         const MAX_RECONNECT_ATTEMPTS = 5;
-        const INITIAL_RECONNECT_DELAY = 1000; // 1 segundo
-        
+        const INITIAL_RECONNECT_DELAY = 2000; // 2 segundos
+
         const client = new Client({
             // Usar webSocketFactory para criar um novo socket a cada conexão
             webSocketFactory: () => new SockJS(wsUrl),
             connectHeaders: {
-                Authorization: `Bearer ${userSession.accessToken}`
+                Authorization: `Bearer ${token}`
             },
             // Configuração de reconexão com backoff exponencial
             reconnectDelay: INITIAL_RECONNECT_DELAY,
@@ -73,6 +94,7 @@ export function useWebSocket() {
             },
             onConnect: () => {
                 setConnected(true);
+                isConnectingRef.current = false;
                 reconnectAttempts = 0; // Reset contador ao conectar com sucesso
                 // Inscrever no tópico privado do usuário
                 client.subscribe(`/user/queue/notificacoes`, (message) => {
@@ -84,30 +106,34 @@ export function useWebSocket() {
             onStompError: (frame) => {
                 console.error('Broker reported error: ' + frame.headers['message']);
                 console.error('Additional details: ' + frame.body);
+                isConnectingRef.current = false;
             },
             onWebSocketError: (event) => {
                 console.error('WebSocket error:', event);
                 reconnectAttempts++;
-                
+
                 // Se exceder o limite de tentativas, desativar a reconexão automática
                 if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
                     console.warn('Máximo de tentativas de reconexão atingido. Desativando WebSocket.');
                     client.deactivate();
                     setConnected(false);
+                    isConnectingRef.current = false;
                 }
             },
             onWebSocketClose: () => {
                 setConnected(false);
                 reconnectAttempts++;
-                
+
                 // Se exceder o limite de tentativas, não tentar reconectar
                 if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
                     console.warn('Máximo de tentativas de reconexão atingido.');
                     client.deactivate();
+                    isConnectingRef.current = false;
                 }
             },
             onDisconnect: () => {
                 setConnected(false);
+                isConnectingRef.current = false;
             }
         });
 
@@ -115,11 +141,13 @@ export function useWebSocket() {
         clientRef.current = client;
 
         return () => {
+            isConnectingRef.current = false;
             if (client.active) {
                 client.deactivate();
             }
         };
-    }, [userSession, fetchInitialNotifications]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userSession?.accessToken]);
 
     const markAsRead = async (id: number) => {
         if (!userSession?.accessToken) return;
