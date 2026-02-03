@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '@/services/api';
-import { FiEdit2, FiTrash2, FiPlus, FiUsers, FiChevronLeft, FiChevronRight, FiAlertTriangle, FiClock } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiPlus, FiUsers, FiChevronLeft, FiChevronRight, FiAlertTriangle, FiClock, FiEye } from 'react-icons/fi';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Membro, MembroPage } from "@/interface/MembrosProps";
@@ -228,6 +228,13 @@ export default function ListaMembros() {
                                             <td>
                                                 <div className="flex items-center justify-center space-x-2">
                                                     <Link
+                                                        href={`/membros/${membro.id}/detalhes`}
+                                                        className="action-btn text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700"
+                                                        title="Ver Detalhes"
+                                                    >
+                                                        <FiEye size={18} />
+                                                    </Link>
+                                                    <Link
                                                         href={`/membros/${membro.id}/historico`}
                                                         className="action-btn text-blue-500 hover:bg-blue-50 hover:text-blue-700"
                                                         title="Histórico"
@@ -235,7 +242,7 @@ export default function ListaMembros() {
                                                         <FiClock size={18} />
                                                     </Link>
                                                     <Link
-                                                        href={`/membros/${membro.id}`}
+                                                        href={`/membros/${membro.id}/editar`}
                                                         className="action-btn action-btn-edit"
                                                         title="Editar"
                                                     >
@@ -289,6 +296,13 @@ export default function ListaMembros() {
                                     </div>
                                     <div className="flex items-center justify-end space-x-2">
                                         <Link
+                                            href={`/membros/${membro.id}/detalhes`}
+                                            className="action-btn text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700"
+                                            title="Ver Detalhes"
+                                        >
+                                            <FiEye size={16} />
+                                        </Link>
+                                        <Link
                                             href={`/membros/${membro.id}/historico`}
                                             className="action-btn text-blue-500 hover:bg-blue-50 hover:text-blue-700"
                                             title="Histórico"
@@ -296,7 +310,7 @@ export default function ListaMembros() {
                                             <FiClock size={16} />
                                         </Link>
                                         <Link
-                                            href={`/membros/${membro.id}`}
+                                            href={`/membros/${membro.id}/editar`}
                                             className="action-btn action-btn-edit"
                                             title="Editar"
                                         >
