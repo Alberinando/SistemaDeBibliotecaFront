@@ -197,8 +197,8 @@ export default function ListaEmprestimos() {
                     <EmptyState />
                 ) : (
                     <>
-                        {/* Table */}
-                        <div className="overflow-x-auto rounded-xl border border-gray-200/50">
+                        {/* Desktop Table */}
+                        <div className="hidden lg:block overflow-x-auto rounded-xl border border-gray-200/50">
                             <table className="table-modern">
                                 <thead>
                                     <tr>
@@ -275,6 +275,76 @@ export default function ListaEmprestimos() {
                             </table>
                         </div>
 
+                        {/* Mobile Cards */}
+                        <div className="lg:hidden space-y-3">
+                            {emprestimos.map((emprestimo, index) => (
+                                <motion.div
+                                    key={emprestimo.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.03 }}
+                                    className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+                                >
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="flex-1">
+                                            <p className="font-medium text-gray-800 text-base">
+                                                {emprestimo.livros.titulo}
+                                            </p>
+                                            <div className="flex items-center space-x-2 mt-1">
+                                                <div className="w-5 h-5 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                                                    {emprestimo.membros.nome.charAt(0).toUpperCase()}
+                                                </div>
+                                                <span className="text-gray-500 text-sm">
+                                                    {emprestimo.membros.nome}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-end gap-1">
+                                            <span className="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                                                #{emprestimo.id}
+                                            </span>
+                                            <span className={`badge text-xs ${emprestimo.status ? 'badge-success' : 'badge-warning'}`}>
+                                                {emprestimo.status ? 'Ativo' : 'Encerrado'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3 border-t border-gray-100 pt-3">
+                                        <div>
+                                            <span className="text-gray-400">Empréstimo:</span>{' '}
+                                            <span className="font-medium text-gray-600">
+                                                {new Date(emprestimo.dataEmprestimo).toLocaleDateString('pt-BR')}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-400">Devolução:</span>{' '}
+                                            <span className="font-medium text-gray-600">
+                                                {emprestimo.dataDevolucao === '' ? '—' : new Date(emprestimo.dataDevolucao).toLocaleDateString('pt-BR')}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-end space-x-2 border-t border-gray-100 pt-3">
+                                        <Link
+                                            href={`/emprestimos/${emprestimo.id}`}
+                                            className="action-btn action-btn-edit"
+                                            title="Editar"
+                                        >
+                                            <FiEdit2 size={16} />
+                                        </Link>
+                                        <button
+                                            onClick={() => {
+                                                setShowModal(true);
+                                                setToDeleteId(emprestimo.id);
+                                            }}
+                                            className="action-btn action-btn-delete cursor-pointer"
+                                            title="Excluir"
+                                        >
+                                            <FiTrash2 size={16} />
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+
                         {/* Pagination */}
                         <div className="pagination">
                             <button
@@ -283,17 +353,17 @@ export default function ListaEmprestimos() {
                                 className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
                                 <FiChevronLeft />
-                                <span>Anterior</span>
+                                <span className="hidden sm:inline">Anterior</span>
                             </button>
                             <div className="pagination-info">
-                                Página {page + 1} de {totalPages || 1}
+                                <span className="hidden sm:inline">Página </span>{page + 1} <span className="hidden sm:inline">de</span><span className="sm:hidden">/</span> {totalPages || 1}
                             </div>
                             <button
                                 onClick={() => setPage(prev => Math.min(prev + 1, totalPages - 1))}
                                 disabled={page + 1 >= totalPages}
                                 className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
-                                <span>Próxima</span>
+                                <span className="hidden sm:inline">Próxima</span>
                                 <FiChevronRight />
                             </button>
                         </div>

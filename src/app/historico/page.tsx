@@ -116,8 +116,8 @@ export default function ListaHistorico() {
                     <EmptyState />
                 ) : (
                     <>
-                        {/* Table */}
-                        <div className="overflow-x-auto rounded-xl border border-gray-200/50">
+                        {/* Desktop Table */}
+                        <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200/50">
                             <table className="table-modern">
                                 <thead>
                                     <tr>
@@ -171,6 +171,50 @@ export default function ListaHistorico() {
                             </table>
                         </div>
 
+                        {/* Mobile Cards */}
+                        <div className="md:hidden space-y-3">
+                            {historicos.map((h, index) => (
+                                <motion.div
+                                    key={h.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.03 }}
+                                    className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+                                >
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="flex-1">
+                                            <p className="font-medium text-gray-800 text-base">
+                                                {h.livros.titulo}
+                                            </p>
+                                            <div className="flex items-center space-x-2 mt-1">
+                                                <div className="w-5 h-5 bg-gradient-to-br from-violet-400 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                                                    {h.membros.nome.charAt(0).toUpperCase()}
+                                                </div>
+                                                <span className="text-gray-500 text-sm">
+                                                    {h.membros.nome}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <span className="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                                            #{h.id}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center space-x-2 text-sm text-gray-500 border-t border-gray-100 pt-3">
+                                        <FiClock className="text-gray-400" size={14} />
+                                        <span>
+                                            {new Date(h.dataAcao).toLocaleString("pt-BR", {
+                                                day: "2-digit",
+                                                month: "2-digit",
+                                                year: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit"
+                                            })}
+                                        </span>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+
                         {/* Pagination */}
                         <div className="pagination">
                             <button
@@ -179,17 +223,17 @@ export default function ListaHistorico() {
                                 className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
                                 <FiChevronLeft />
-                                <span>Anterior</span>
+                                <span className="hidden sm:inline">Anterior</span>
                             </button>
                             <div className="pagination-info">
-                                Página {page + 1} de {totalPages || 1}
+                                <span className="hidden sm:inline">Página </span>{page + 1} <span className="hidden sm:inline">de</span><span className="sm:hidden">/</span> {totalPages || 1}
                             </div>
                             <button
                                 onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
                                 disabled={page + 1 >= totalPages}
                                 className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
-                                <span>Próxima</span>
+                                <span className="hidden sm:inline">Próxima</span>
                                 <FiChevronRight />
                             </button>
                         </div>
