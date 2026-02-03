@@ -51,19 +51,31 @@ export function useWebSocket() {
 
         // Configurar WebSocket usando URL da variável de ambiente
         const wsUrl = getWebSocketUrl();
-        const socket = new SockJS(wsUrl);
+        
+        // Contador de tentativas de reconexão
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 5;
+        const INITIAL_RECONNECT_DELAY = 1000; // 1 segundo
+        
         const client = new Client({
-            webSocketFactory: () => socket,
+            // Usar webSocketFactory para criar um novo socket a cada conexão
+            webSocketFactory: () => new SockJS(wsUrl),
             connectHeaders: {
                 Authorization: `Bearer ${userSession.accessToken}`
             },
+            // Configuração de reconexão com backoff exponencial
+            reconnectDelay: INITIAL_RECONNECT_DELAY,
+            // Desabilitar heartbeat se causar problemas (opcional)
+            heartbeatIncoming: 10000,
+            heartbeatOutgoing: 10000,
             debug: (str) => {
                 // console.log(str); // Descomente para debug
             },
             onConnect: () => {
                 setConnected(true);
+                reconnectAttempts = 0; // Reset contador ao conectar com sucesso
                 // Inscrever no tópico privado do usuário
-                client.subscribe(`user/queue/notificacoes`, (message) => {
+                client.subscribe(`/user/queue/notificacoes`, (message) => {
                     const novaNotificacao: Notificacao = JSON.parse(message.body);
                     setNotificacoes(prev => [novaNotificacao, ...prev]);
                     setUnreadCount(prev => prev + 1);
@@ -72,6 +84,27 @@ export function useWebSocket() {
             onStompError: (frame) => {
                 console.error('Broker reported error: ' + frame.headers['message']);
                 console.error('Additional details: ' + frame.body);
+            },
+            onWebSocketError: (event) => {
+                console.error('WebSocket error:', event);
+                reconnectAttempts++;
+                
+                // Se exceder o limite de tentativas, desativar a reconexão automática
+                if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                    console.warn('Máximo de tentativas de reconexão atingido. Desativando WebSocket.');
+                    client.deactivate();
+                    setConnected(false);
+                }
+            },
+            onWebSocketClose: () => {
+                setConnected(false);
+                reconnectAttempts++;
+                
+                // Se exceder o limite de tentativas, não tentar reconectar
+                if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                    console.warn('Máximo de tentativas de reconexão atingido.');
+                    client.deactivate();
+                }
             },
             onDisconnect: () => {
                 setConnected(false);
