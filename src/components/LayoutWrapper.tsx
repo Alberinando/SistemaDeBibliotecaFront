@@ -20,7 +20,7 @@ export default function LayoutWrapper({ children }: Readonly<{ children: React.R
         <AuthenticatedPage>
             <div className="flex min-h-screen">
                 <Sidebar />
-                <main className="flex-1 p-3 pt-20 md:p-6 md:pt-6 overflow-x-hidden">
+                <main className="flex-1 p-2 pt-18 md:p-4 md:pt-4 overflow-x-hidden">
                     {children}
                 </main>
             </div>
