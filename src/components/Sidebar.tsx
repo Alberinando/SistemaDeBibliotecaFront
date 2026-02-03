@@ -1,30 +1,23 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import menuItems from "@/util/Options";
 import { FaBars, FaTimes, FaSignOutAlt, FaBook } from "react-icons/fa";
-import { useAuth } from "@/resources/users/authentication.resourse";
+import { useSession, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import NotificationBell from "@/components/ui/NotificationBell";
 
 const Sidebar: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [isMounted, setIsMounted] = useState(false);
     const pathname = usePathname();
-    const auth = useAuth();
-    const router = useRouter();
+    const { data: session, status } = useSession();
 
-    // Only access localStorage after component mounts (client-side only)
-    const user = isMounted ? auth.getUserSession() : null;
-
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
+    const user = session?.user;
+    const isMounted = status !== "loading";
 
     function logout() {
-        auth.invalidateSession();
-        router.push("/");
+        signOut({ callbackUrl: "/" });
     }
 
     const toggleSidebar = () => setIsOpen((prevState) => !prevState);

@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
-import { useAuth } from "@/resources/users/authentication.resourse";
+import { getSession, signOut } from "next-auth/react";
 
 // Usa variável de ambiente ou fallback para a URL da API
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://bibliotecaapi.alberinando.net";
@@ -8,16 +8,14 @@ const api = axios.create({
     baseURL: API_BASE_URL,
 });
 
-// Interceptor de requisição para adicionar token e renovar se necessário
+// Interceptor de requisição para adicionar token do NextAuth
 api.interceptors.request.use(
     async (config: InternalAxiosRequestConfig) => {
-        const auth = useAuth();
+        // Obtém a sessão do NextAuth (client-side)
+        const session = await getSession();
 
-        // Obtém um token válido (renova automaticamente se necessário)
-        const accessToken = await auth.getValidAccessToken();
-
-        if (accessToken) {
-            config.headers.Authorization = `Bearer ${accessToken}`;
+        if (session?.accessToken) {
+            config.headers.Authorization = `Bearer ${session.accessToken}`;
         }
 
         return config;
@@ -42,23 +40,14 @@ api.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        // Se receber 401 e ainda não tentou renovar
+        // Se receber 401, redireciona para login
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
-            const auth = useAuth();
-            const refreshed = await auth.refreshAccessToken();
-
-            if (refreshed) {
-                // Atualiza o header com o novo token e retenta a requisição
-                originalRequest.headers.Authorization = `Bearer ${refreshed.accessToken}`;
-                return api(originalRequest);
-            } else {
-                // Refresh falhou, redireciona para login
-                if (typeof window !== "undefined") {
-                    auth.invalidateSession();
-                    window.location.href = "/";
-                }
+            // Com NextAuth, o refresh é gerenciado automaticamente pelo middleware
+            // Se chegou aqui com 401, a sessão expirou - redireciona para login
+            if (typeof window !== "undefined") {
+                signOut({ callbackUrl: "/" });
             }
         }
 
