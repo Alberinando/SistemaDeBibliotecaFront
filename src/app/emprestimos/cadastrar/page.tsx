@@ -21,7 +21,8 @@ export default function CreateEmprestimo() {
     const [dataEmprestimoDate, setDataEmprestimoDate] = useState<Date | undefined>(new Date());
     const [dataDevolucaoDate, setDataDevolucaoDate] = useState<Date | undefined>(undefined);
     const [status, setStatus] = useState<boolean>(true);
-    const [livros, setLivros] = useState<{ id: number; titulo: string }[]>([]);
+    const [quantidade, setQuantidade] = useState<number>(1);
+    const [livros, setLivros] = useState<{ id: number; titulo: string; quantidade?: number }[]>([]);
     const [membros, setMembros] = useState<{ id: number; nome: string }[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -73,7 +74,8 @@ export default function CreateEmprestimo() {
                 membroId: Number(membroId),
                 dataEmprestimo: dataEmprestimoISO,
                 dataDevolucao: dataDevolucaoISO,
-                status
+                status,
+                quantidade
             },
                 {
                     headers: {
@@ -94,21 +96,21 @@ export default function CreateEmprestimo() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="max-w-2xl mx-auto"
+                className="max-w-xl mx-auto"
             >
                 <div className="page-container">
                     {/* Header */}
-                    <div className="flex items-center space-x-4 mb-8">
+                    <div className="flex items-center space-x-3 mb-4">
                         <Link
                             href="/emprestimos"
-                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
                         >
-                            <FiArrowLeft size={20} />
+                            <FiArrowLeft size={16} />
                         </Link>
                         <div>
-                            <h1 className="page-title">Cadastrar Novo Empréstimo</h1>
-                            <p className="text-gray-500 text-sm mt-1">
-                                Preencha os dados do empréstimo abaixo
+                            <h1 className="page-title text-lg">Cadastrar Empréstimo</h1>
+                            <p className="text-gray-500 text-xs">
+                                Preencha os dados do empréstimo
                             </p>
                         </div>
                     </div>
@@ -118,93 +120,96 @@ export default function CreateEmprestimo() {
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-3"
+                            className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-2"
                         >
-                            <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <span className="text-white text-xs">!</span>
+                            <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span className="text-white text-[10px]">!</span>
                             </div>
-                            <p className="text-red-600 text-sm">{error}</p>
+                            <p className="text-red-600 text-xs">{error}</p>
                         </motion.div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Livro */}
-                        <div className="form-group">
-                            <label className="form-label flex items-center space-x-2">
-                                <FiBook className="text-indigo-500" />
-                                <span>Livro</span>
-                            </label>
-                            <Select
-                                value={livroId}
-                                onValueChange={(value) => setLivroId(value)}
-                                name="livro"
-                                required
-                            >
-                                <SelectTrigger className="input-modern cursor-pointer">
-                                    <SelectValue placeholder="Selecione um livro" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white border border-gray-200 rounded-xl shadow-lg">
-                                    {livros.map((livro) => (
-                                        <SelectItem
-                                            key={livro.id}
-                                            value={livro.id.toString()}
-                                            className="px-4 py-2 hover:bg-gray-50 cursor-pointer rounded-lg"
-                                        >
-                                            {livro.titulo}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                    <form onSubmit={handleSubmit} className="space-y-3">
+                        {/* Livro e Membro em grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {/* Livro */}
+                            <div className="form-group">
+                                <label className="form-label text-xs flex items-center space-x-1.5">
+                                    <FiBook className="text-indigo-500" size={14} />
+                                    <span>Livro</span>
+                                </label>
+                                <Select
+                                    value={livroId}
+                                    onValueChange={(value) => setLivroId(value)}
+                                    name="livro"
+                                    required
+                                >
+                                    <SelectTrigger className="input-modern text-sm py-2 cursor-pointer">
+                                        <SelectValue placeholder="Selecione" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white border border-gray-200 rounded-lg shadow-lg">
+                                        {livros.map((livro) => (
+                                            <SelectItem
+                                                key={livro.id}
+                                                value={livro.id.toString()}
+                                                className="px-3 py-1.5 hover:bg-gray-50 cursor-pointer rounded text-sm"
+                                            >
+                                                {livro.titulo} {livro.quantidade !== undefined && `(${livro.quantidade} disp.)`}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Membro */}
+                            <div className="form-group">
+                                <label className="form-label text-xs flex items-center space-x-1.5">
+                                    <FiUser className="text-indigo-500" size={14} />
+                                    <span>Membro</span>
+                                </label>
+                                <Select
+                                    value={membroId}
+                                    onValueChange={(value) => setMembroId(value)}
+                                    name="membro"
+                                    required
+                                >
+                                    <SelectTrigger className="input-modern text-sm py-2 cursor-pointer">
+                                        <SelectValue placeholder="Selecione" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white border border-gray-200 rounded-lg shadow-lg">
+                                        {membros.map((membro) => (
+                                            <SelectItem
+                                                key={membro.id}
+                                                value={membro.id.toString()}
+                                                className="px-3 py-1.5 hover:bg-gray-50 cursor-pointer rounded text-sm"
+                                            >
+                                                {membro.nome}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
-                        {/* Membro */}
-                        <div className="form-group">
-                            <label className="form-label flex items-center space-x-2">
-                                <FiUser className="text-indigo-500" />
-                                <span>Membro</span>
-                            </label>
-                            <Select
-                                value={membroId}
-                                onValueChange={(value) => setMembroId(value)}
-                                name="membro"
-                                required
-                            >
-                                <SelectTrigger className="input-modern cursor-pointer">
-                                    <SelectValue placeholder="Selecione um membro" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white border border-gray-200 rounded-xl shadow-lg">
-                                    {membros.map((membro) => (
-                                        <SelectItem
-                                            key={membro.id}
-                                            value={membro.id.toString()}
-                                            className="px-4 py-2 hover:bg-gray-50 cursor-pointer rounded-lg"
-                                        >
-                                            {membro.nome}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {/* Datas */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Datas em grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {/* Data de Empréstimo */}
                             <div className="form-group">
-                                <label className="form-label flex items-center space-x-2">
-                                    <FiCalendar className="text-indigo-500" />
-                                    <span>Data de Empréstimo</span>
+                                <label className="form-label text-xs flex items-center space-x-1.5">
+                                    <FiCalendar className="text-indigo-500" size={14} />
+                                    <span>Data Empréstimo</span>
                                 </label>
                                 <Popover open={openEmprestimo} onOpenChange={setOpenEmprestimo}>
                                     <PopoverTrigger asChild>
                                         <Button
                                             variant="outline"
-                                            className="w-full justify-between input-modern cursor-pointer"
+                                            className="w-full justify-between input-modern text-sm py-2 cursor-pointer"
                                         >
-                                            {dataEmprestimoDate ? dataEmprestimoDate.toLocaleDateString('pt-BR') : "Selecione a data"}
-                                            <ChevronDownIcon className="text-gray-400" />
+                                            {dataEmprestimoDate ? dataEmprestimoDate.toLocaleDateString('pt-BR') : "Selecione"}
+                                            <ChevronDownIcon className="text-gray-400" size={16} />
                                         </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0 bg-white rounded-xl shadow-xl border" align="start">
+                                    <PopoverContent className="w-auto p-0 bg-white rounded-lg shadow-xl border" align="start">
                                         <Calendar
                                             mode="single"
                                             selected={dataEmprestimoDate}
@@ -217,21 +222,21 @@ export default function CreateEmprestimo() {
 
                             {/* Data de Devolução */}
                             <div className="form-group">
-                                <label className="form-label flex items-center space-x-2">
-                                    <FiCalendar className="text-indigo-500" />
-                                    <span>Data de Devolução</span>
+                                <label className="form-label text-xs flex items-center space-x-1.5">
+                                    <FiCalendar className="text-indigo-500" size={14} />
+                                    <span>Data Devolução</span>
                                 </label>
                                 <Popover open={openDevolucao} onOpenChange={setOpenDevolucao}>
                                     <PopoverTrigger asChild>
                                         <Button
                                             variant="outline"
-                                            className="w-full justify-between input-modern cursor-pointer"
+                                            className="w-full justify-between input-modern text-sm py-2 cursor-pointer"
                                         >
-                                            {dataDevolucaoDate ? dataDevolucaoDate.toLocaleDateString('pt-BR') : "Selecione a data"}
-                                            <ChevronDownIcon className="text-gray-400" />
+                                            {dataDevolucaoDate ? dataDevolucaoDate.toLocaleDateString('pt-BR') : "Selecione"}
+                                            <ChevronDownIcon className="text-gray-400" size={16} />
                                         </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0 bg-white rounded-xl shadow-xl border" align="start">
+                                    <PopoverContent className="w-auto p-0 bg-white rounded-lg shadow-xl border" align="start">
                                         <Calendar
                                             mode="single"
                                             selected={dataDevolucaoDate}
@@ -243,18 +248,34 @@ export default function CreateEmprestimo() {
                             </div>
                         </div>
 
+                        {/* Quantidade */}
+                        <div className="form-group">
+                            <label className="form-label text-xs flex items-center space-x-1.5">
+                                <FiBook className="text-indigo-500" size={14} />
+                                <span>Quantidade</span>
+                            </label>
+                            <input
+                                type="number"
+                                min="1"
+                                value={quantidade}
+                                onChange={(e) => setQuantidade(parseInt(e.target.value) || 1)}
+                                className="input-modern text-sm py-2 w-full"
+                                required
+                            />
+                        </div>
+
                         {/* Status Toggle */}
                         <div className="form-group">
-                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
-                                <div className="flex items-center space-x-3">
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${status ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-500'
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <div className="flex items-center space-x-2">
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${status ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-500'
                                         }`}>
-                                        <FiCheck size={20} />
+                                        <FiCheck size={16} />
                                     </div>
                                     <div>
-                                        <p className="font-medium text-gray-800">Status do Empréstimo</p>
-                                        <p className="text-sm text-gray-500">
-                                            {status ? 'Empréstimo ativo' : 'Empréstimo encerrado'}
+                                        <p className="font-medium text-gray-800 text-sm">Status</p>
+                                        <p className="text-xs text-gray-500">
+                                            {status ? 'Ativo' : 'Encerrado'}
                                         </p>
                                     </div>
                                 </div>
@@ -270,22 +291,22 @@ export default function CreateEmprestimo() {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+                        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                             <Link
                                 href="/emprestimos"
-                                className="btn-ghost flex items-center space-x-2"
+                                className="btn-ghost text-sm flex items-center space-x-1.5 px-3 py-1.5"
                             >
-                                <FiArrowLeft />
+                                <FiArrowLeft size={14} />
                                 <span>Voltar</span>
                             </Link>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="btn-success flex items-center space-x-2 cursor-pointer"
+                                className="btn-success text-sm flex items-center space-x-1.5 px-4 py-2 cursor-pointer"
                             >
                                 {loading ? (
                                     <>
-                                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
@@ -293,7 +314,7 @@ export default function CreateEmprestimo() {
                                     </>
                                 ) : (
                                     <>
-                                        <FiSave />
+                                        <FiSave size={14} />
                                         <span>Cadastrar</span>
                                     </>
                                 )}
