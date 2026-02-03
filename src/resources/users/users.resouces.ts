@@ -1,4 +1,4 @@
-import {JwtPayload} from "jwt-decode";
+import { JwtPayload } from "jwt-decode";
 
 export class Users {
     name?: string;
@@ -25,6 +25,7 @@ export interface AuthResponse {
 }
 
 export class UserSessionToken {
+    id?: number;
     name?: string;
     login?: string;
     accessToken?: string;
@@ -33,6 +34,7 @@ export class UserSessionToken {
 }
 
 export interface ExtendedJwtPayload extends JwtPayload {
+    id?: number;
     name?: string;
 }
 

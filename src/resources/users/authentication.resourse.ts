@@ -55,6 +55,7 @@ class AuthService {
         const decodedToken = jwtDecode<ExtendedJwtPayload>(authResponse.accessToken);
 
         const userSessionToken: UserSessionToken = {
+            id: decodedToken?.id,
             accessToken: authResponse.accessToken,
             refreshToken: authResponse.refreshToken,
             login: decodedToken?.sub,

@@ -6,6 +6,7 @@ import menuItems from "@/util/Options";
 import { FaBars, FaTimes, FaSignOutAlt, FaBook } from "react-icons/fa";
 import { useAuth } from "@/resources/users/authentication.resourse";
 import { motion, AnimatePresence } from "framer-motion";
+import NotificationBell from "@/components/ui/NotificationBell";
 
 const Sidebar: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -25,21 +26,24 @@ const Sidebar: React.FC = () => {
         <>
             {/* Mobile Header */}
             <div
-                className={`md:hidden fixed top-0 left-0 z-50 w-full h-16 flex items-center px-4 transition-all duration-300 ${isOpen
+                className={`md:hidden fixed top-0 left-0 z-50 w-full h-16 flex items-center justify-between px-4 transition-all duration-300 ${isOpen
                     ? "bg-transparent"
                     : "bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-900 shadow-lg"
                     }`}
             >
-                <button
-                    onClick={toggleSidebar}
-                    className="p-2 text-white hover:bg-white/10 rounded-lg transition-all duration-200"
-                    aria-label="Abrir Menu"
-                >
-                    <FaBars size={22} />
-                </button>
-                <span className="ml-4 text-white font-semibold text-lg">
-                    Biblioteca
-                </span>
+                <div className="flex items-center">
+                    <button
+                        onClick={toggleSidebar}
+                        className="p-2 text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                        aria-label="Abrir Menu"
+                    >
+                        <FaBars size={22} />
+                    </button>
+                    <span className="ml-4 text-white font-semibold text-lg">
+                        Biblioteca
+                    </span>
+                </div>
+                {!isOpen && <NotificationBell />}
             </div>
 
             {/* Mobile Overlay */}
@@ -59,7 +63,7 @@ const Sidebar: React.FC = () => {
             {/* Sidebar */}
             <aside
                 className={`fixed top-0 left-0 h-screen w-60 z-50 transform transition-transform duration-300 ease-out ${isOpen ? "translate-x-0" : "-translate-x-full"
-                    } md:translate-x-0 md:static`}
+                    } md:translate-x-0 md:static flex flex-col`}
                 style={{
                     background: "linear-gradient(180deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)",
                 }}
@@ -79,7 +83,7 @@ const Sidebar: React.FC = () => {
                 </div>
 
                 {/* Logo Section */}
-                <div className="relative flex flex-col items-center justify-center py-4 border-b border-white/10">
+                <div className="relative flex flex-col items-center justify-center py-4 border-b border-white/10 shrink-0">
                     <div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30 mb-2">
                         <FaBook className="text-white text-lg" />
                     </div>
@@ -91,9 +95,17 @@ const Sidebar: React.FC = () => {
                     </span>
                 </div>
 
-                {/* User Info */}
+                {/* User Info & Notifications for Desktop */}
                 {user && (
-                    <div className="relative px-3 py-3 border-b border-white/10">
+                    <div className="relative px-3 py-3 border-b border-white/10 shrink-0">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] uppercase tracking-wider text-indigo-300 font-semibold">
+                                Perfil
+                            </span>
+                            <div className="hidden md:block">
+                                <NotificationBell />
+                            </div>
+                        </div>
                         <div className="flex items-center space-x-2">
                             <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg">
                                 {user.name?.charAt(0).toUpperCase() || "U"}
@@ -111,7 +123,7 @@ const Sidebar: React.FC = () => {
                 )}
 
                 {/* Navigation */}
-                <nav className="relative flex-1 py-2 overflow-y-auto">
+                <nav className="relative flex-1 py-2 overflow-y-auto custom-scrollbar">
                     <div className="px-2 space-y-0.5">
                         {menuItems.map((item, index) => {
                             const isActive = pathname === item.href;
@@ -151,7 +163,7 @@ const Sidebar: React.FC = () => {
                 </nav>
 
                 {/* Logout Button */}
-                <div className="relative p-3 border-t border-white/10">
+                <div className="relative p-3 border-t border-white/10 shrink-0">
                     <button
                         onClick={logout}
                         className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-medium text-sm rounded-lg transition-all duration-200 shadow-lg shadow-rose-500/30 hover:shadow-rose-500/50 cursor-pointer"
@@ -166,3 +178,4 @@ const Sidebar: React.FC = () => {
 };
 
 export default Sidebar;
+

@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '@/services/api';
-import { FiEdit2, FiTrash2, FiPlus, FiUsers, FiChevronLeft, FiChevronRight, FiAlertTriangle } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiPlus, FiUsers, FiChevronLeft, FiChevronRight, FiAlertTriangle, FiClock } from 'react-icons/fi';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Membro, MembroPage } from "@/interface/MembrosProps";
@@ -281,6 +281,13 @@ export default function ListaMembros() {
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-end space-x-2">
+                                        <Link
+                                            href={`/membros/${membro.id}/historico`}
+                                            className="action-btn text-blue-500 hover:bg-blue-50 hover:text-blue-700"
+                                            title="Histórico"
+                                        >
+                                            <FiClock size={16} />
+                                        </Link>
                                         <Link
                                             href={`/membros/${membro.id}`}
                                             className="action-btn action-btn-edit"
