@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { AcessToken } from "@/resources/users/users.resouces";
+import { AuthResponse } from "@/resources/users/users.resouces";
 import { useAuth } from "@/resources/users/authentication.resourse";
 
 export default function LoginPage() {
@@ -21,11 +21,16 @@ export default function LoginPage() {
         const credentials = { login, senha };
 
         try {
-            const accessToken: AcessToken = await auth.authenticate(credentials);
-            auth.initSession(accessToken);
+            const authResponse: AuthResponse = await auth.authenticate(credentials);
+            auth.initSession(authResponse);
             router.push("/livros");
         } catch (err) {
             console.error(err);
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("Erro ao fazer login");
+            }
         } finally {
             setLoading(false);
         }
