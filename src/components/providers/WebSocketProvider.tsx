@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { useAuth } from "@/resources/users/authentication.resourse";
+import { useSession } from "next-auth/react";
 import api from '@/services/api';
 import { Notificacao } from '@/interface/NotificacaoProps';
 
@@ -32,8 +32,11 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     const clientRef = useRef<Client | null>(null);
     const isMountedRef = useRef<boolean>(false);
 
-    const auth = useAuth();
-    const userSession = auth.getUserSession();
+    const { data: session, status } = useSession();
+
+    // Extract token and user id from NextAuth session
+    const accessToken = session?.accessToken;
+    const userId = session?.user?.id;
 
     useEffect(() => {
         setIsMounted(true);
@@ -45,13 +48,11 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 
     const fetchInitialNotifications = useCallback(async () => {
         if (!isMountedRef.current) return;
-        const token = userSession?.accessToken;
-        const userId = userSession?.id;
-        if (!token || !userId) return;
+        if (!accessToken || !userId) return;
 
         try {
             const response = await api.get<Notificacao[]>(`/v1/notificacoes/funcionario/${userId}`, {
-                headers: { "Authorization": `Bearer ${token}` }
+                headers: { "Authorization": `Bearer ${accessToken}` }
             });
 
             if (!isMountedRef.current) return;
@@ -64,13 +65,16 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
                 setNotificacoes([]);
             }
         }
-    }, [userSession?.accessToken, userSession?.id]);
+    }, [accessToken, userId]);
 
     useEffect(() => {
         if (typeof window === 'undefined' || !isMounted) return;
 
-        const token = userSession?.accessToken;
-        if (!token) return;
+        // Wait until session is loaded
+        if (status === "loading") return;
+
+        // Don't connect without token
+        if (!accessToken) return;
 
         // Prevent duplicate connections
         if (clientRef.current?.active) {
@@ -84,7 +88,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
         const client = new Client({
             webSocketFactory: () => new SockJS(wsUrl),
             connectHeaders: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${accessToken}`
             },
             reconnectDelay: 5000,
             heartbeatIncoming: 10000,
@@ -133,13 +137,13 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
                 clientRef.current = null;
             }
         };
-    }, [isMounted, userSession?.accessToken, fetchInitialNotifications]);
+    }, [isMounted, status, accessToken, fetchInitialNotifications]);
 
     const markAsRead = useCallback(async (id: number) => {
-        if (!userSession?.accessToken) return;
+        if (!accessToken) return;
         try {
             await api.put(`/v1/notificacoes/${id}/lida`, {}, {
-                headers: { "Authorization": `Bearer ${userSession.accessToken}` }
+                headers: { "Authorization": `Bearer ${accessToken}` }
             });
             setNotificacoes(prev => prev.map(n =>
                 n.id === id ? { ...n, lida: true } : n
@@ -148,10 +152,10 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
         } catch (error) {
             console.error("Erro ao marcar como lida:", error);
         }
-    }, [userSession?.accessToken]);
+    }, [accessToken]);
 
     const markAllAsRead = useCallback(async () => {
-        if (!userSession?.accessToken || !userSession.id) return;
+        if (!accessToken || !userId) return;
 
         const unreadIds = notificacoes.filter(n => !n.lida).map(n => n.id);
         setNotificacoes(prev => prev.map(n => ({ ...n, lida: true })));
@@ -160,13 +164,13 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
         for (const id of unreadIds) {
             try {
                 await api.put(`/v1/notificacoes/${id}/lida`, {}, {
-                    headers: { "Authorization": `Bearer ${userSession.accessToken}` }
+                    headers: { "Authorization": `Bearer ${accessToken}` }
                 });
             } catch (error) {
                 console.error(`Erro ao marcar ${id}:`, error);
             }
         }
-    }, [userSession?.accessToken, userSession?.id, notificacoes]);
+    }, [accessToken, userId, notificacoes]);
 
     const value: WebSocketContextType = {
         notificacoes: isMounted ? notificacoes : [],

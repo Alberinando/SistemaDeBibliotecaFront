@@ -5,8 +5,6 @@ import { FiEdit2, FiTrash2, FiPlus, FiUsers, FiChevronLeft, FiChevronRight, FiAl
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Membro, MembroPage } from "@/interface/MembrosProps";
-import { useAuth } from "@/resources/users/authentication.resourse";
-import AuthenticatedPage from '@/components/Authenticated/AuthenticatedPage';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ListaMembros() {
@@ -20,18 +18,13 @@ export default function ListaMembros() {
     const [toDeleteId, setToDeleteId] = useState<number | null>(null);
 
     const router = useRouter();
-    const auth = useAuth();
 
     const fetchMembros = useCallback(async () => {
         setLoading(true);
         setError(null);
-        const userSession = auth.getUserSession();
         try {
             const response = await api.get<MembroPage>('/v1/membros', {
-                params: { page, size: 10 },
-                headers: {
-                    "Authorization": `Bearer ${userSession?.accessToken}`
-                }
+                params: { page, size: 10 }
             });
             setMembros(response.data.content);
             setTotalPages(response.data.totalPages);
@@ -88,13 +81,8 @@ export default function ListaMembros() {
 
     const handleDelete = async () => {
         if (!toDeleteId) return;
-        const userSession = auth.getUserSession();
         try {
-            await api.delete(`/v1/membros/${toDeleteId}`, {
-                headers: {
-                    "Authorization": `Bearer ${userSession?.accessToken}`
-                }
-            });
+            await api.delete(`/v1/membros/${toDeleteId}`);
             setShowModal(false);
             setToDeleteId(null);
             fetchMembros();
@@ -145,7 +133,7 @@ export default function ListaMembros() {
     );
 
     return (
-        <AuthenticatedPage>
+        <>
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -402,6 +390,6 @@ export default function ListaMembros() {
                     )}
                 </AnimatePresence>
             </motion.div>
-        </AuthenticatedPage>
+        </>
     );
 }

@@ -2,8 +2,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import api from "@/services/api";
 import { Historico, HistoricoPage } from "@/interface/HistoricoPros";
-import { useAuth } from "@/resources/users/authentication.resourse";
-import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
 import { FiClock, FiChevronLeft, FiChevronRight, FiAlertTriangle } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 
@@ -15,19 +13,13 @@ export default function ListaHistorico() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    const auth = useAuth();
-
     const fetchHistoricos = useCallback(async () => {
         setLoading(true);
         setError(null);
-        const userSession = auth.getUserSession();
 
         try {
             const response = await api.get<HistoricoPage>("/v1/historico", {
-                params: { page, size: 10 },
-                headers: {
-                    "Authorization": `Bearer ${userSession?.accessToken}`
-                }
+                params: { page, size: 10 }
             });
             setHistoricos(response.data.content);
             setTotalPages(response.data.totalPages);
@@ -78,7 +70,7 @@ export default function ListaHistorico() {
     );
 
     return (
-        <AuthenticatedPage>
+        <>
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -240,6 +232,6 @@ export default function ListaHistorico() {
                     </>
                 )}
             </motion.div>
-        </AuthenticatedPage>
+        </>
     );
 }

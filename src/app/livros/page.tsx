@@ -5,8 +5,6 @@ import { FiEdit2, FiTrash2, FiPlus, FiBook, FiChevronLeft, FiChevronRight, FiAle
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Livro, LivroPage } from "@/interface/LivroPros";
-import { useAuth } from "@/resources/users/authentication.resourse";
-import AuthenticatedPage from '@/components/Authenticated/AuthenticatedPage';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ListaLivros() {
@@ -20,18 +18,13 @@ export default function ListaLivros() {
     const [toDeleteId, setToDeleteId] = useState<number | null>(null);
 
     const router = useRouter();
-    const auth = useAuth();
 
     const fetchLivros = useCallback(async () => {
         setLoading(true);
         setError(null);
-        const userSession = auth.getUserSession();
         try {
             const response = await api.get<LivroPage>('/v1/livros', {
-                params: { page, size: 10 },
-                headers: {
-                    "Authorization": `Bearer ${userSession?.accessToken}`
-                }
+                params: { page, size: 10 }
             });
             setLivros(response.data.content);
             setTotalPages(response.data.totalPages);
@@ -89,12 +82,7 @@ export default function ListaLivros() {
     const handleDelete = async () => {
         if (!toDeleteId) return;
         try {
-            const userSession = auth.getUserSession();
-            await api.delete(`/v1/livros/${toDeleteId}`, {
-                headers: {
-                    "Authorization": `Bearer ${userSession?.accessToken}`
-                }
-            });
+            await api.delete(`/v1/livros/${toDeleteId}`);
             setShowModal(false);
             setToDeleteId(null);
             fetchLivros();
@@ -146,7 +134,7 @@ export default function ListaLivros() {
     );
 
     return (
-        <AuthenticatedPage>
+        <>
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -374,6 +362,6 @@ export default function ListaLivros() {
                     )}
                 </AnimatePresence>
             </motion.div>
-        </AuthenticatedPage>
+        </>
     );
 }

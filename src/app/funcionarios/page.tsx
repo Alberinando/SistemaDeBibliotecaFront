@@ -4,9 +4,7 @@ import api from '@/services/api';
 import { FiEdit2, FiTrash2, FiPlus, FiUserCheck, FiChevronLeft, FiChevronRight, FiAlertTriangle } from 'react-icons/fi';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from "@/resources/users/authentication.resourse";
 import FuncionarioPage, { Funcionario } from "@/interface/FuncionarioProps";
-import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ListaFuncionarios() {
@@ -20,18 +18,13 @@ export default function ListaFuncionarios() {
     const [toDeleteId, setToDeleteId] = useState<number | null>(null);
 
     const router = useRouter();
-    const auth = useAuth();
 
     const fetchFuncionarios = useCallback(async () => {
         setLoading(true);
         setError(null);
-        const userSession = auth.getUserSession();
         try {
             const response = await api.get<FuncionarioPage>('/v1/funcionario', {
-                params: { page, size: 10 },
-                headers: {
-                    "Authorization": `Bearer ${userSession?.accessToken}`
-                }
+                params: { page, size: 10 }
             });
             setFuncionarios(response.data.content);
             setTotalPages(response.data.totalPages);
@@ -86,12 +79,7 @@ export default function ListaFuncionarios() {
     const handleDelete = async () => {
         if (toDeleteId === null) return;
         try {
-            const userSession = auth.getUserSession();
-            await api.delete(`/v1/funcionario/${toDeleteId}`, {
-                headers: {
-                    "Authorization": `Bearer ${userSession?.accessToken}`
-                }
-            });
+            await api.delete(`/v1/funcionario/${toDeleteId}`);
             setShowModal(false);
             setToDeleteId(null);
             fetchFuncionarios();
@@ -143,7 +131,7 @@ export default function ListaFuncionarios() {
     );
 
     return (
-        <AuthenticatedPage>
+        <>
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -384,6 +372,6 @@ export default function ListaFuncionarios() {
                     )}
                 </AnimatePresence>
             </motion.div>
-        </AuthenticatedPage>
+        </>
     );
 }
