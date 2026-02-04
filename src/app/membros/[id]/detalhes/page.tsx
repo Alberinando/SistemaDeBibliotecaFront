@@ -86,7 +86,7 @@ export default function DetalhesMembro() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="page-container max-w-2xl mx-auto px-3 sm:px-4"
+                className="page-container max-w-xl px-2 sm:px-4"
             >
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
