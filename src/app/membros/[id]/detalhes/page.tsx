@@ -57,21 +57,21 @@ export default function DetalhesMembro() {
     }, [fetchMembro, id]);
 
     const LoadingSkeleton = () => (
-        <div className="space-y-3">
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-                <div className="flex items-center space-x-3">
-                    <div className="skeleton h-12 w-12 rounded-xl" />
+        <div className="space-y-4">
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+                <div className="flex items-center space-x-4">
+                    <div className="skeleton h-14 w-14 rounded-xl" />
                     <div className="space-y-2">
-                        <div className="skeleton h-5 w-32 rounded" />
-                        <div className="skeleton h-3 w-20 rounded" />
+                        <div className="skeleton h-6 w-40 rounded" />
+                        <div className="skeleton h-4 w-24 rounded" />
                     </div>
                 </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
                 {[...Array(4)].map((_, i) => (
-                    <div key={i} className="bg-white rounded-lg border border-gray-200 p-3">
-                        <div className="skeleton h-3 w-16 rounded mb-1" />
-                        <div className="skeleton h-4 w-full rounded" />
+                    <div key={i} className="bg-white rounded-xl border border-gray-200 p-4">
+                        <div className="skeleton h-4 w-20 rounded mb-2" />
+                        <div className="skeleton h-5 w-full rounded" />
                     </div>
                 ))}
             </div>
@@ -85,25 +85,25 @@ export default function DetalhesMembro() {
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md mx-auto"
+                className="w-full max-w-lg mx-auto px-2"
             >
                 {/* Header */}
-                <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
                         <Link
                             href="/membros"
-                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
+                            className="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
                         >
-                            <FiArrowLeft size={16} />
+                            <FiArrowLeft size={18} />
                         </Link>
-                        <h1 className="text-base font-semibold text-gray-800">Detalhes do Membro</h1>
+                        <h1 className="text-lg font-semibold text-gray-800">Detalhes do Membro</h1>
                     </div>
                     {membro && (
                         <Link
                             href={`/membros/${id}/editar`}
-                            className="flex items-center space-x-1 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+                            className="flex items-center space-x-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700"
                         >
-                            <FiEdit2 size={12} />
+                            <FiEdit2 size={14} />
                             <span>Editar</span>
                         </Link>
                     )}
@@ -113,84 +113,84 @@ export default function DetalhesMembro() {
                 {loading ? (
                     <LoadingSkeleton />
                 ) : error ? (
-                    <div className="text-center py-6 bg-red-50 rounded-xl border border-red-100">
-                        <FiAlertCircle className="mx-auto h-8 w-8 text-red-400 mb-2" />
-                        <p className="text-red-600 text-sm">{error}</p>
+                    <div className="text-center py-8 bg-red-50 rounded-xl border border-red-100">
+                        <FiAlertCircle className="mx-auto h-10 w-10 text-red-400 mb-3" />
+                        <p className="text-red-600">{error}</p>
                     </div>
                 ) : membro && (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {/* Profile Card */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 h-12" />
-                            <div className="px-4 pb-3 -mt-6">
-                                <div className="flex items-end space-x-3">
-                                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-md border-2 border-white flex-shrink-0">
+                            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 h-14" />
+                            <div className="px-5 pb-4 -mt-7">
+                                <div className="flex items-end space-x-4">
+                                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg border-2 border-white flex-shrink-0">
                                         {membro.nome.charAt(0).toUpperCase()}
                                     </div>
                                     <div className="pb-1 min-w-0">
-                                        <h2 className="text-base font-bold text-gray-800 truncate">{membro.nome}</h2>
-                                        <p className="text-gray-500 text-xs">ID: #{membro.id}</p>
+                                        <h2 className="text-lg font-bold text-gray-800 truncate">{membro.nome}</h2>
+                                        <p className="text-gray-500 text-sm">ID: #{membro.id}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Info Cards - Grid 2x2 compacto */}
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="bg-white rounded-lg border border-gray-200 p-2.5 flex items-center space-x-2">
-                                <div className="w-7 h-7 bg-blue-50 rounded-md flex items-center justify-center text-blue-600 flex-shrink-0">
-                                    <FiMail size={14} />
+                        {/* Info Cards */}
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-white rounded-xl border border-gray-200 p-3.5 flex items-center space-x-3">
+                                <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 flex-shrink-0">
+                                    <FiMail size={16} />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[9px] text-gray-400 uppercase tracking-wide">E-mail</p>
-                                    <p className="font-medium text-gray-800 text-xs truncate">{membro.email}</p>
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">E-mail</p>
+                                    <p className="font-medium text-gray-800 text-sm truncate">{membro.email}</p>
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-lg border border-gray-200 p-2.5 flex items-center space-x-2">
-                                <div className="w-7 h-7 bg-green-50 rounded-md flex items-center justify-center text-green-600 flex-shrink-0">
-                                    <FiPhone size={14} />
+                            <div className="bg-white rounded-xl border border-gray-200 p-3.5 flex items-center space-x-3">
+                                <div className="w-9 h-9 bg-green-50 rounded-lg flex items-center justify-center text-green-600 flex-shrink-0">
+                                    <FiPhone size={16} />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[9px] text-gray-400 uppercase tracking-wide">Telefone</p>
-                                    <p className="font-medium text-gray-800 text-xs">{formatTelefone(String(membro.telefone))}</p>
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">Telefone</p>
+                                    <p className="font-medium text-gray-800 text-sm">{formatTelefone(String(membro.telefone))}</p>
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-lg border border-gray-200 p-2.5 flex items-center space-x-2">
-                                <div className="w-7 h-7 bg-purple-50 rounded-md flex items-center justify-center text-purple-600 flex-shrink-0">
-                                    <FiCreditCard size={14} />
+                            <div className="bg-white rounded-xl border border-gray-200 p-3.5 flex items-center space-x-3">
+                                <div className="w-9 h-9 bg-purple-50 rounded-lg flex items-center justify-center text-purple-600 flex-shrink-0">
+                                    <FiCreditCard size={16} />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[9px] text-gray-400 uppercase tracking-wide">CPF</p>
-                                    <p className="font-medium text-gray-800 text-xs">{formatCpf(String(membro.cpf))}</p>
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">CPF</p>
+                                    <p className="font-medium text-gray-800 text-sm">{formatCpf(String(membro.cpf))}</p>
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-lg border border-gray-200 p-2.5 flex items-center space-x-2">
-                                <div className="w-7 h-7 bg-amber-50 rounded-md flex items-center justify-center text-amber-600 flex-shrink-0">
-                                    <FiBook size={14} />
+                            <div className="bg-white rounded-xl border border-gray-200 p-3.5 flex items-center space-x-3">
+                                <div className="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600 flex-shrink-0">
+                                    <FiBook size={16} />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[9px] text-gray-400 uppercase tracking-wide">Empréstimos</p>
-                                    <p className="font-medium text-gray-800 text-xs">
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">Empréstimos</p>
+                                    <p className="font-medium text-gray-800 text-sm">
                                         {totalEmprestimos} total • {emprestimosAtivos} ativo
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Recent Loans - Compacto */}
+                        {/* Recent Loans */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between">
+                            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                                 <div className="flex items-center space-x-2">
-                                    <FiClock size={12} className="text-indigo-600" />
-                                    <h3 className="font-medium text-gray-800 text-xs">Empréstimos Recentes</h3>
+                                    <FiClock size={14} className="text-indigo-600" />
+                                    <h3 className="font-semibold text-gray-800 text-sm">Empréstimos Recentes</h3>
                                 </div>
                                 {totalEmprestimos > 3 && (
                                     <Link
                                         href={`/membros/${id}/historico`}
-                                        className="text-[10px] text-indigo-600 hover:text-indigo-700 font-medium"
+                                        className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
                                     >
                                         Ver todos →
                                     </Link>
@@ -198,34 +198,34 @@ export default function DetalhesMembro() {
                             </div>
 
                             {emprestimos.length === 0 ? (
-                                <div className="py-4 text-center text-gray-500">
-                                    <FiBook className="mx-auto h-6 w-6 text-gray-300 mb-1" />
-                                    <p className="text-xs">Nenhum empréstimo</p>
+                                <div className="py-6 text-center text-gray-500">
+                                    <FiBook className="mx-auto h-8 w-8 text-gray-300 mb-2" />
+                                    <p className="text-sm">Nenhum empréstimo</p>
                                 </div>
                             ) : (
                                 <div className="divide-y divide-gray-50">
                                     {emprestimos.map((emp) => {
                                         const isLate = emp.status && emp.dataDevolucao && new Date(emp.dataDevolucao) < new Date();
                                         return (
-                                            <div key={emp.id} className="px-3 py-2 flex items-center justify-between">
-                                                <div className="flex items-center space-x-2 min-w-0 flex-1">
-                                                    <FiBook size={12} className="text-indigo-500 flex-shrink-0" />
+                                            <div key={emp.id} className="px-4 py-2.5 flex items-center justify-between">
+                                                <div className="flex items-center space-x-3 min-w-0 flex-1">
+                                                    <FiBook size={14} className="text-indigo-500 flex-shrink-0" />
                                                     <div className="min-w-0 flex-1">
-                                                        <p className="font-medium text-gray-800 text-xs truncate">{emp.livros.titulo}</p>
-                                                        <p className="text-[10px] text-gray-400">
+                                                        <p className="font-medium text-gray-800 text-sm truncate">{emp.livros.titulo}</p>
+                                                        <p className="text-xs text-gray-400">
                                                             {format(new Date(emp.dataEmprestimo), "dd MMM yyyy", { locale: ptBR })}
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="flex-shrink-0 ml-2">
+                                                <div className="flex-shrink-0 ml-3">
                                                     {emp.status ? (
                                                         isLate ? (
-                                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-red-100 text-red-700">Atrasado</span>
+                                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-700">Atrasado</span>
                                                         ) : (
-                                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-blue-100 text-blue-700">Aberto</span>
+                                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700">Aberto</span>
                                                         )
                                                     ) : (
-                                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-green-100 text-green-700">Devolvido</span>
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-700">Devolvido</span>
                                                     )}
                                                 </div>
                                             </div>
