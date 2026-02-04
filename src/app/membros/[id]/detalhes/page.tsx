@@ -85,7 +85,7 @@ export default function DetalhesMembro() {
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-lg mx-auto px-2"
+                className="w-full mx-auto px-1"
             >
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
