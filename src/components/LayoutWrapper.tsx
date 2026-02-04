@@ -18,9 +18,9 @@ export default function LayoutWrapper({ children }: Readonly<{ children: React.R
 
     return (
         <WebSocketProvider>
-            <div className="flex min-h-screen">
+            <div className="min-h-screen">
                 <Sidebar />
-                <main className="flex-1 p-2 pt-18 md:p-4 md:pt-4 overflow-x-hidden">
+                <main className="md:ml-60 min-h-screen p-2 pt-18 md:p-4 md:pt-4 overflow-x-hidden">
                     {children}
                 </main>
             </div>

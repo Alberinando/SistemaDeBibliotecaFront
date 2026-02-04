@@ -68,7 +68,7 @@ const Sidebar: React.FC = () => {
             {/* Sidebar */}
             <aside
                 className={`fixed top-0 left-0 h-screen w-60 z-50 transform transition-transform duration-300 ease-out ${isOpen ? "translate-x-0" : "-translate-x-full"
-                    } md:translate-x-0 md:static flex flex-col`}
+                    } md:translate-x-0 flex flex-col`}
                 style={{
                     background: "linear-gradient(180deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)",
                 }}
