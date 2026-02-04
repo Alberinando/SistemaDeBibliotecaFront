@@ -103,25 +103,7 @@ export default function LoginPage() {
                         membros e funcionários em uma única plataforma.
                     </p>
 
-                    {/* Features */}
-                    <div className="mt-12 grid grid-cols-3 gap-4">
-                        {[
-                            { label: "Livros", icon: "📚" },
-                            { label: "Membros", icon: "👥" },
-                            { label: "Empréstimos", icon: "🔄" },
-                        ].map((item, index) => (
-                            <motion.div
-                                key={item.label}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.3 + index * 0.1 }}
-                                className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10"
-                            >
-                                <span className="text-2xl mb-2 block">{item.icon}</span>
-                                <span className="text-white text-sm font-medium">{item.label}</span>
-                            </motion.div>
-                        ))}
-                    </div>
+
                 </motion.div>
             </div>
 
