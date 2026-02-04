@@ -23,8 +23,7 @@ export default withAuth(
             authorized: ({ token, req }) => {
                 const { pathname } = req.nextUrl;
 
-                // Permitir acesso à página de login sem autenticação
-                if (pathname === "/" || pathname === "/login") {
+                if (pathname === "/" || pathname === "/login" || pathname === "/cadastro") {
                     return true;
                 }
 

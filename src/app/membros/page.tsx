@@ -7,6 +7,45 @@ import { useRouter } from 'next/navigation';
 import { Membro, MembroPage } from "@/interface/MembrosProps";
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Externalized Static Components
+const LoadingSkeleton = () => (
+    <div className="space-y-4">
+        {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-4 p-4">
+                <div className="skeleton h-6 w-12 rounded" />
+                <div className="skeleton h-6 flex-1 rounded" />
+                <div className="skeleton h-6 w-48 rounded" />
+                <div className="skeleton h-8 w-20 rounded" />
+            </div>
+        ))}
+    </div>
+);
+
+const EmptyState = () => (
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="empty-state"
+    >
+        <div className="empty-state-icon">
+            <FiUsers size={36} />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            Nenhum membro cadastrado
+        </h3>
+        <p className="text-gray-500 mb-6">
+            Comece adicionando o primeiro membro da biblioteca
+        </p>
+        <Link
+            href="/membros/cadastrar"
+            className="btn-success inline-flex items-center space-x-2"
+        >
+            <FiPlus />
+            <span>Cadastrar Primeiro Membro</span>
+        </Link>
+    </motion.div>
+);
+
 export default function ListaMembros() {
     const [membros, setMembros] = useState<Membro[]>([]);
     const [page, setPage] = useState<number>(0);
@@ -79,7 +118,7 @@ export default function ListaMembros() {
         };
     }, [showModal, toDeleteId]);
 
-    const handleDelete = async () => {
+    const handleDelete = useCallback(async () => {
         if (!toDeleteId) return;
         try {
             await api.delete(`/v1/membros/${toDeleteId}`);
@@ -90,47 +129,10 @@ export default function ListaMembros() {
             console.error(err);
             alert('Erro ao excluir membro.');
         }
-    };
+    }, [toDeleteId, fetchMembros]);
 
-    // Loading Skeleton
-    const LoadingSkeleton = () => (
-        <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex items-center space-x-4 p-4">
-                    <div className="skeleton h-6 w-12 rounded" />
-                    <div className="skeleton h-6 flex-1 rounded" />
-                    <div className="skeleton h-6 w-48 rounded" />
-                    <div className="skeleton h-8 w-20 rounded" />
-                </div>
-            ))}
-        </div>
-    );
-
-    // Empty State
-    const EmptyState = () => (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="empty-state"
-        >
-            <div className="empty-state-icon">
-                <FiUsers size={36} />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Nenhum membro cadastrado
-            </h3>
-            <p className="text-gray-500 mb-6">
-                Comece adicionando o primeiro membro da biblioteca
-            </p>
-            <Link
-                href="/membros/cadastrar"
-                className="btn-success inline-flex items-center space-x-2"
-            >
-                <FiPlus />
-                <span>Cadastrar Primeiro Membro</span>
-            </Link>
-        </motion.div>
-    );
+    // Loading Skeleton externalized
+    // Empty State externalized
 
     return (
         <>

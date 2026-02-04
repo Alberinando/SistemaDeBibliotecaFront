@@ -1,7 +1,40 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { jwtDecode } from "jwt-decode";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://bibliotecaapi.alberinando.net";
+
+async function refreshAccessToken(token: any) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/v1/funcionario/refresh`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                refreshToken: token.refreshToken,
+            }),
+        });
+
+        const refreshedTokens = await response.json();
+
+        if (!response.ok) {
+            throw refreshedTokens;
+        }
+
+        return {
+            ...token,
+            accessToken: refreshedTokens.accessToken,
+            refreshToken: refreshedTokens.refreshToken ?? token.refreshToken, // Fallback to old refresh token
+        };
+    } catch (error) {
+        console.error("Erro ao atualizar token:", error);
+        return {
+            ...token,
+            error: "RefreshAccessTokenError",
+        };
+    }
+}
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -48,18 +81,42 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks: {
         async jwt({ token, user }) {
-            // Na primeira autenticação, adiciona os tokens ao JWT
+            // 1. Initial sign in
             if (user) {
-                token.id = user.id;
-                token.accessToken = user.accessToken;
-                token.refreshToken = user.refreshToken;
+                return {
+                    id: user.id,
+                    accessToken: user.accessToken,
+                    refreshToken: user.refreshToken,
+                    name: user.name,
+                };
             }
-            return token;
+
+            // 2. Check if access token is still valid
+            // Decode token to get expiration time
+            if (token.accessToken) {
+                try {
+                    const decoded: any = jwtDecode(token.accessToken as string);
+                    const expirationTime = decoded.exp * 1000; // Convert to ms
+                    const now = Date.now();
+
+                    // Refresh if expired or expiring soon (e.g., within 1 minute)
+                    if (now < expirationTime - 60000) {
+                        return token;
+                    }
+                } catch (e) {
+                    console.error("Error decoding token:", e);
+                    // If decode fails, try to refresh immediately
+                }
+            }
+
+            // 3. Access token has expired, try to update it
+            return await refreshAccessToken(token);
         },
         async session({ session, token }) {
             // Expõe os dados necessários na session
             session.user.id = token.id as string;
             session.accessToken = token.accessToken as string;
+            session.error = token.error as string; // Pass error to client if refresh failed
             return session;
         }
     },

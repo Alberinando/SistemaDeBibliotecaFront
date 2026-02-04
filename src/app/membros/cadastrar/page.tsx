@@ -1,5 +1,5 @@
 "use client";
-import { useState, FormEvent, useRef, useEffect } from "react";
+import { useState, FormEvent, useRef, useEffect, useCallback } from "react";
 import api from "@/services/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -88,7 +88,7 @@ export default function CreateMembro() {
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [nome, cpf, telefone, email, router]);
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = useCallback(async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
@@ -112,7 +112,7 @@ export default function CreateMembro() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [auth, nome, cpf, telefone, email, router]);
 
     return (
         <AuthenticatedPage>

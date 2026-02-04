@@ -5,6 +5,38 @@ import { Historico, HistoricoPage } from "@/interface/HistoricoPros";
 import { FiClock, FiChevronLeft, FiChevronRight, FiAlertTriangle } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 
+// Externalized Static Components
+const LoadingSkeleton = () => (
+    <div className="space-y-4">
+        {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-4 p-4">
+                <div className="skeleton h-6 w-12 rounded" />
+                <div className="skeleton h-6 flex-1 rounded" />
+                <div className="skeleton h-6 w-32 rounded" />
+                <div className="skeleton h-6 w-28 rounded" />
+            </div>
+        ))}
+    </div>
+);
+
+const EmptyState = () => (
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="empty-state"
+    >
+        <div className="empty-state-icon">
+            <FiClock size={36} />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            Nenhum registro no histórico
+        </h3>
+        <p className="text-gray-500">
+            O histórico de ações aparecerá aqui conforme movimentações forem realizadas
+        </p>
+    </motion.div>
+);
+
 export default function ListaHistorico() {
     const [historicos, setHistoricos] = useState<Historico[]>([]);
     const [page, setPage] = useState<number>(0);
@@ -36,38 +68,8 @@ export default function ListaHistorico() {
         fetchHistoricos();
     }, [fetchHistoricos]);
 
-    // Loading Skeleton
-    const LoadingSkeleton = () => (
-        <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex items-center space-x-4 p-4">
-                    <div className="skeleton h-6 w-12 rounded" />
-                    <div className="skeleton h-6 flex-1 rounded" />
-                    <div className="skeleton h-6 w-32 rounded" />
-                    <div className="skeleton h-6 w-28 rounded" />
-                </div>
-            ))}
-        </div>
-    );
-
-    // Empty State
-    const EmptyState = () => (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="empty-state"
-        >
-            <div className="empty-state-icon">
-                <FiClock size={36} />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Nenhum registro no histórico
-            </h3>
-            <p className="text-gray-500">
-                O histórico de ações aparecerá aqui conforme movimentações forem realizadas
-            </p>
-        </motion.div>
-    );
+    // Loading Skeleton externalized
+    // Empty State externalized
 
     return (
         <>

@@ -7,6 +7,46 @@ import { useRouter } from 'next/navigation';
 import { Livro, LivroPage } from "@/interface/LivroPros";
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Externalized Static Components
+const LoadingSkeleton = () => (
+    <div className="space-y-4">
+        {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-4 p-4">
+                <div className="skeleton h-6 w-12 rounded" />
+                <div className="skeleton h-6 flex-1 rounded" />
+                <div className="skeleton h-6 w-24 rounded" />
+                <div className="skeleton h-6 w-32 rounded" />
+                <div className="skeleton h-8 w-20 rounded" />
+            </div>
+        ))}
+    </div>
+);
+
+const EmptyState = () => (
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="empty-state"
+    >
+        <div className="empty-state-icon">
+            <FiBook size={36} />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            Nenhum livro cadastrado
+        </h3>
+        <p className="text-gray-500 mb-6">
+            Comece adicionando o primeiro livro ao acervo
+        </p>
+        <Link
+            href="/livros/cadastrar"
+            className="btn-success inline-flex items-center space-x-2"
+        >
+            <FiPlus />
+            <span>Cadastrar Primeiro Livro</span>
+        </Link>
+    </motion.div>
+);
+
 export default function ListaLivros() {
     const [livros, setLivros] = useState<Livro[]>([]);
     const [page, setPage] = useState<number>(0);
@@ -79,7 +119,7 @@ export default function ListaLivros() {
         };
     }, [showModal, toDeleteId]);
 
-    const handleDelete = async () => {
+    const handleDelete = useCallback(async () => {
         if (!toDeleteId) return;
         try {
             await api.delete(`/v1/livros/${toDeleteId}`);
@@ -90,48 +130,10 @@ export default function ListaLivros() {
             console.error(err);
             alert('Erro ao excluir livro.');
         }
-    };
+    }, [toDeleteId, fetchLivros]);
 
-    // Loading Skeleton
-    const LoadingSkeleton = () => (
-        <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex items-center space-x-4 p-4">
-                    <div className="skeleton h-6 w-12 rounded" />
-                    <div className="skeleton h-6 flex-1 rounded" />
-                    <div className="skeleton h-6 w-24 rounded" />
-                    <div className="skeleton h-6 w-32 rounded" />
-                    <div className="skeleton h-8 w-20 rounded" />
-                </div>
-            ))}
-        </div>
-    );
-
-    // Empty State
-    const EmptyState = () => (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="empty-state"
-        >
-            <div className="empty-state-icon">
-                <FiBook size={36} />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Nenhum livro cadastrado
-            </h3>
-            <p className="text-gray-500 mb-6">
-                Comece adicionando o primeiro livro ao acervo
-            </p>
-            <Link
-                href="/livros/cadastrar"
-                className="btn-success inline-flex items-center space-x-2"
-            >
-                <FiPlus />
-                <span>Cadastrar Primeiro Livro</span>
-            </Link>
-        </motion.div>
-    );
+    // Loading Skeleton externalized
+    // Empty State externalized
 
     return (
         <>

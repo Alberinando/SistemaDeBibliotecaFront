@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, FormEvent, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/services/api";
 import Link from "next/link";
@@ -9,6 +9,18 @@ import { useAuth } from "@/resources/users/authentication.resourse";
 import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
 import { FiUser, FiPhone, FiMail, FiCreditCard, FiArrowLeft, FiSave } from 'react-icons/fi';
 import { motion } from 'framer-motion';
+
+// Externalized Static Component
+const LoadingSkeleton = () => (
+    <div className="space-y-6">
+        {[...Array(4)].map((_, i) => (
+            <div key={i} className="space-y-2">
+                <div className="skeleton h-4 w-24 rounded" />
+                <div className="skeleton h-12 w-full rounded-xl" />
+            </div>
+        ))}
+    </div>
+);
 
 export default function EditarMembro() {
     const router = useRouter();
@@ -50,7 +62,7 @@ export default function EditarMembro() {
         if (id) fetchMembro();
     }, [id]);
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = useCallback(async (e: FormEvent) => {
         e.preventDefault();
         setSaving(true);
         setError(null);
@@ -75,19 +87,9 @@ export default function EditarMembro() {
         } finally {
             setSaving(false);
         }
-    };
+    }, [auth, id, nome, cpf, telefone, email, router]);
 
-    // Loading Skeleton
-    const LoadingSkeleton = () => (
-        <div className="space-y-6">
-            {[...Array(4)].map((_, i) => (
-                <div key={i} className="space-y-2">
-                    <div className="skeleton h-4 w-24 rounded" />
-                    <div className="skeleton h-12 w-full rounded-xl" />
-                </div>
-            ))}
-        </div>
-    );
+    // LoadingSkeleton externalized
 
     return (
         <AuthenticatedPage>

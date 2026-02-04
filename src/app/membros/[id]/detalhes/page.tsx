@@ -13,6 +13,29 @@ import { ptBR } from 'date-fns/locale';
 import formatTelefone from '@/util/formatTelefone';
 import formatCpf from '@/util/formatCpf';
 
+// Externalized Static Component
+const LoadingSkeleton = () => (
+    <div className="space-y-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center space-x-4">
+                <div className="skeleton h-14 w-14 rounded-xl" />
+                <div className="space-y-2">
+                    <div className="skeleton h-6 w-40 rounded" />
+                    <div className="skeleton h-4 w-24 rounded" />
+                </div>
+            </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+            {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl border border-gray-200 p-4">
+                    <div className="skeleton h-4 w-20 rounded mb-2" />
+                    <div className="skeleton h-5 w-full rounded" />
+                </div>
+            ))}
+        </div>
+    </div>
+);
+
 interface EmprestimoPage {
     content: EmprestimoResponseDTO[];
     totalPages: number;
@@ -56,27 +79,7 @@ export default function DetalhesMembro() {
         }
     }, [fetchMembro, id]);
 
-    const LoadingSkeleton = () => (
-        <div className="space-y-4">
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-                <div className="flex items-center space-x-4">
-                    <div className="skeleton h-14 w-14 rounded-xl" />
-                    <div className="space-y-2">
-                        <div className="skeleton h-6 w-40 rounded" />
-                        <div className="skeleton h-4 w-24 rounded" />
-                    </div>
-                </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-                {[...Array(4)].map((_, i) => (
-                    <div key={i} className="bg-white rounded-xl border border-gray-200 p-4">
-                        <div className="skeleton h-4 w-20 rounded mb-2" />
-                        <div className="skeleton h-5 w-full rounded" />
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
+    // LoadingSkeleton externalized
 
     const emprestimosAtivos = emprestimos.filter(e => e.status === true).length;
 

@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, useCallback } from 'react';
 import api from '@/services/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -55,13 +55,14 @@ export default function CreateEmprestimo() {
         fetchOptions();
     }, []);
 
+    // Externalized Helpers
     function dateToIsoAtMidnightLocal(date?: Date | undefined) {
         if (!date) return null;
         const localMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
         return localMidnight.toISOString();
     }
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = useCallback(async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         const userSession = auth.getUserSession();
@@ -89,7 +90,7 @@ export default function CreateEmprestimo() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [auth, dataEmprestimoDate, dataDevolucaoDate, livroId, membroId, status, quantidade, router]);
 
     return (
         <AuthenticatedPage>

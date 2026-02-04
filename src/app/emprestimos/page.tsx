@@ -1,11 +1,53 @@
 "use client"
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '@/services/api';
-import { FiEdit2, FiTrash2, FiPlus, FiRepeat, FiChevronLeft, FiChevronRight, FiAlertTriangle } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiPlus, FiRepeat, FiChevronLeft, FiChevronRight, FiAlertTriangle, FiCheckCircle } from 'react-icons/fi';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Emprestimo, EmprestimoPage } from "@/interface/EmprestimoPros";
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Externalized Static Components
+const LoadingSkeleton = () => (
+    <div className="space-y-4">
+        {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-4 p-4">
+                <div className="skeleton h-6 w-12 rounded" />
+                <div className="skeleton h-6 flex-1 rounded" />
+                <div className="skeleton h-6 w-32 rounded" />
+                <div className="skeleton h-6 w-24 rounded" />
+                <div className="skeleton h-6 w-24 rounded" />
+                <div className="skeleton h-6 w-20 rounded" />
+                <div className="skeleton h-8 w-20 rounded" />
+            </div>
+        ))}
+    </div>
+);
+
+const EmptyState = () => (
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="empty-state"
+    >
+        <div className="empty-state-icon">
+            <FiRepeat size={36} />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            Nenhum empréstimo registrado
+        </h3>
+        <p className="text-gray-500 mb-6">
+            Comece registrando o primeiro empréstimo
+        </p>
+        <Link
+            href="/emprestimos/cadastrar"
+            className="btn-success inline-flex items-center space-x-2"
+        >
+            <FiPlus />
+            <span>Cadastrar Primeiro Empréstimo</span>
+        </Link>
+    </motion.div>
+);
 
 export default function ListaEmprestimos() {
     const [emprestimos, setEmprestimos] = useState<Emprestimo[]>([]);
@@ -83,7 +125,7 @@ export default function ListaEmprestimos() {
         };
     }, [showModal, toDeleteId]);
 
-    const handleDelete = async () => {
+    const handleDelete = useCallback(async () => {
         if (!toDeleteId) return;
         try {
             await api.delete(`/v1/emprestimos/${toDeleteId}`);
@@ -94,50 +136,28 @@ export default function ListaEmprestimos() {
             console.error(err);
             alert('Erro ao excluir empréstimo.');
         }
-    };
+    }, [toDeleteId, fetchEmprestimos]);
 
-    // Loading Skeleton
-    const LoadingSkeleton = () => (
-        <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex items-center space-x-4 p-4">
-                    <div className="skeleton h-6 w-12 rounded" />
-                    <div className="skeleton h-6 flex-1 rounded" />
-                    <div className="skeleton h-6 w-32 rounded" />
-                    <div className="skeleton h-6 w-24 rounded" />
-                    <div className="skeleton h-6 w-24 rounded" />
-                    <div className="skeleton h-6 w-20 rounded" />
-                    <div className="skeleton h-8 w-20 rounded" />
-                </div>
-            ))}
-        </div>
-    );
+    const handleDevolucao = useCallback(async (emprestimo: Emprestimo) => {
+        if (!confirm(`Confirmar devolução do livro "${emprestimo.livros.titulo}"?`)) return;
+        try {
+            // Atualiza o empréstimo definindo dataDevolucao como hoje e status como false (encerrado)
+            await api.put('/v1/emprestimos', {
+                ...emprestimo,
+                livros: emprestimo.livros.id,
+                membros: emprestimo.membros.id,
+                dataDevolucao: new Date().toISOString(),
+                status: false
+            });
+            fetchEmprestimos();
+        } catch (err) {
+            console.error(err);
+            alert('Erro ao registrar devolução.');
+        }
+    }, [fetchEmprestimos]);
 
-    // Empty State
-    const EmptyState = () => (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="empty-state"
-        >
-            <div className="empty-state-icon">
-                <FiRepeat size={36} />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Nenhum empréstimo registrado
-            </h3>
-            <p className="text-gray-500 mb-6">
-                Comece registrando o primeiro empréstimo
-            </p>
-            <Link
-                href="/emprestimos/cadastrar"
-                className="btn-success inline-flex items-center space-x-2"
-            >
-                <FiPlus />
-                <span>Cadastrar Primeiro Empréstimo</span>
-            </Link>
-        </motion.div>
-    );
+    // Loading Skeleton externalized
+    // Empty State externalized
 
     return (
         <>
@@ -238,6 +258,15 @@ export default function ListaEmprestimos() {
                                             </td>
                                             <td>
                                                 <div className="flex items-center justify-center space-x-2">
+                                                    {!emprestimo.dataDevolucao && emprestimo.status && (
+                                                        <button
+                                                            onClick={() => handleDevolucao(emprestimo)}
+                                                            className="action-btn text-indigo-600 bg-indigo-50 hover:bg-indigo-100"
+                                                            title="Realizar Devolução"
+                                                        >
+                                                            <FiCheckCircle size={18} />
+                                                        </button>
+                                                    )}
                                                     <Link
                                                         href={`/emprestimos/${emprestimo.id}`}
                                                         className="action-btn action-btn-edit"
@@ -311,6 +340,15 @@ export default function ListaEmprestimos() {
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-end space-x-2 border-t border-gray-100 pt-3">
+                                        {!emprestimo.dataDevolucao && emprestimo.status && (
+                                            <button
+                                                onClick={() => handleDevolucao(emprestimo)}
+                                                className="action-btn text-indigo-600 bg-indigo-50 hover:bg-indigo-100"
+                                                title="Realizar Devolução"
+                                            >
+                                                <FiCheckCircle size={16} />
+                                            </button>
+                                        )}
                                         <Link
                                             href={`/emprestimos/${emprestimo.id}`}
                                             className="action-btn action-btn-edit"

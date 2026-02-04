@@ -13,6 +13,7 @@ export interface Emprestimo {
     dataEmprestimo: string;
     dataDevolucao: string;
     status: boolean;
+    quantidade: number;
 }
 
 export interface EmprestimoPage {

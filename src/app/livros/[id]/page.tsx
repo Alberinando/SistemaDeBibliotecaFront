@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState, FormEvent } from 'react';
+import { useEffect, useState, FormEvent, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/services/api';
 import Link from 'next/link';
@@ -8,6 +8,18 @@ import { useAuth } from "@/resources/users/authentication.resourse";
 import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
 import { FiBook, FiUser, FiTag, FiHash, FiCheck, FiArrowLeft, FiSave } from 'react-icons/fi';
 import { motion } from 'framer-motion';
+
+// Externalized Static Component
+const LoadingSkeleton = () => (
+    <div className="space-y-6">
+        {[...Array(5)].map((_, i) => (
+            <div key={i} className="space-y-2">
+                <div className="skeleton h-4 w-24 rounded" />
+                <div className="skeleton h-12 w-full rounded-xl" />
+            </div>
+        ))}
+    </div>
+);
 
 export default function EditarLivro() {
     const router = useRouter();
@@ -52,12 +64,12 @@ export default function EditarLivro() {
         if (id) fetchLivro();
     }, [id]);
 
-    const handleIsbnChange = (value: string) => {
+    const handleIsbnChange = useCallback((value: string) => {
         const raw = value.replace(/\D/g, '');
         setIsbn(formatIsbn(raw));
-    };
+    }, []);
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = useCallback(async (e: FormEvent) => {
         e.preventDefault();
         setSaving(true);
         setError(null);
@@ -85,19 +97,9 @@ export default function EditarLivro() {
         } finally {
             setSaving(false);
         }
-    };
+    }, [auth, id, titulo, autor, categoria, disponibilidade, isbn, quantidade, router]);
 
-    // Loading State
-    const LoadingSkeleton = () => (
-        <div className="space-y-6">
-            {[...Array(5)].map((_, i) => (
-                <div key={i} className="space-y-2">
-                    <div className="skeleton h-4 w-24 rounded" />
-                    <div className="skeleton h-12 w-full rounded-xl" />
-                </div>
-            ))}
-        </div>
-    );
+    // Loading State externalized
 
     return (
         <AuthenticatedPage>

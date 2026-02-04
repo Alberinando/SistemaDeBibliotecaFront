@@ -1,5 +1,5 @@
 "use client"
-import { useState, FormEvent, useRef, useEffect } from 'react';
+import { useState, FormEvent, useRef, useEffect, useCallback } from 'react';
 import api from '@/services/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -31,7 +31,7 @@ export default function CreateLivro() {
     const submitButtonRef = useRef<HTMLButtonElement>(null);
     const auth = useAuth();
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = useCallback(async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
@@ -61,12 +61,12 @@ export default function CreateLivro() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [isbn, titulo, autor, categoria, disponibilidade, quantidade, token, router]);
 
-    const handleIsbnChange = (value: string) => {
+    const handleIsbnChange = useCallback((value: string) => {
         const raw = value.replace(/\D/g, '');
         setIsbn(formatIsbn(raw));
-    };
+    }, []);
 
     useEffect(() => {
         const cycleRefs = [tituloRef, autorRef, categoriaRef, quantidadeRef, isbnRef];

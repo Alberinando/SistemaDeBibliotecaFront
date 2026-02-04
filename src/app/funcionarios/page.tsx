@@ -7,6 +7,46 @@ import { useRouter } from 'next/navigation';
 import FuncionarioPage, { Funcionario } from "@/interface/FuncionarioProps";
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Externalized Static Components
+const LoadingSkeleton = () => (
+    <div className="space-y-4">
+        {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-4 p-4">
+                <div className="skeleton h-6 w-12 rounded" />
+                <div className="skeleton h-6 flex-1 rounded" />
+                <div className="skeleton h-6 w-24 rounded" />
+                <div className="skeleton h-6 w-32 rounded" />
+                <div className="skeleton h-8 w-20 rounded" />
+            </div>
+        ))}
+    </div>
+);
+
+const EmptyState = () => (
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="empty-state"
+    >
+        <div className="empty-state-icon">
+            <FiUserCheck size={36} />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            Nenhum funcionário cadastrado
+        </h3>
+        <p className="text-gray-500 mb-6">
+            Comece adicionando o primeiro funcionário
+        </p>
+        <Link
+            href="/funcionarios/cadastrar"
+            className="btn-success inline-flex items-center space-x-2"
+        >
+            <FiPlus />
+            <span>Cadastrar Primeiro Funcionário</span>
+        </Link>
+    </motion.div>
+);
+
 export default function ListaFuncionarios() {
     const [funcionarios, setFuncionarios] = useState<Funcionario[]>([]);
     const [page, setPage] = useState<number>(0);
@@ -76,7 +116,7 @@ export default function ListaFuncionarios() {
         };
     }, [showModal, toDeleteId]);
 
-    const handleDelete = async () => {
+    const handleDelete = useCallback(async () => {
         if (toDeleteId === null) return;
         try {
             await api.delete(`/v1/funcionario/${toDeleteId}`);
@@ -87,48 +127,10 @@ export default function ListaFuncionarios() {
             console.error(err);
             alert('Erro ao excluir funcionário.');
         }
-    };
+    }, [toDeleteId, fetchFuncionarios]);
 
-    // Loading Skeleton
-    const LoadingSkeleton = () => (
-        <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex items-center space-x-4 p-4">
-                    <div className="skeleton h-6 w-12 rounded" />
-                    <div className="skeleton h-6 flex-1 rounded" />
-                    <div className="skeleton h-6 w-24 rounded" />
-                    <div className="skeleton h-6 w-32 rounded" />
-                    <div className="skeleton h-8 w-20 rounded" />
-                </div>
-            ))}
-        </div>
-    );
-
-    // Empty State
-    const EmptyState = () => (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="empty-state"
-        >
-            <div className="empty-state-icon">
-                <FiUserCheck size={36} />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Nenhum funcionário cadastrado
-            </h3>
-            <p className="text-gray-500 mb-6">
-                Comece adicionando o primeiro funcionário
-            </p>
-            <Link
-                href="/funcionarios/cadastrar"
-                className="btn-success inline-flex items-center space-x-2"
-            >
-                <FiPlus />
-                <span>Cadastrar Primeiro Funcionário</span>
-            </Link>
-        </motion.div>
-    );
+    // Loading Skeleton externalized
+    // Empty State externalized
 
     return (
         <>

@@ -17,6 +17,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FiBook, FiUser, FiCalendar, FiCheck, FiArrowLeft, FiSave } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 
+// Externalized Helpers & Components
+function dateToIsoAtMidnightLocal(date?: Date | undefined) {
+    if (!date) return null;
+    const localMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    return localMidnight.toISOString();
+}
+
+const LoadingSkeleton = () => (
+    <div className="space-y-6">
+        {[...Array(4)].map((_, i) => (
+            <div key={i} className="space-y-2">
+                <div className="skeleton h-4 w-24 rounded" />
+                <div className="skeleton h-12 w-full rounded-xl" />
+            </div>
+        ))}
+    </div>
+);
+
 export default function EditEmprestimo() {
     const router = useRouter();
     const params = useParams();
@@ -27,6 +45,7 @@ export default function EditEmprestimo() {
     const [dataEmprestimo, setDataEmprestimo] = useState<Date | undefined>(new Date());
     const [dataDevolucao, setDataDevolucao] = useState<Date | undefined>(undefined);
     const [status, setStatus] = useState<boolean>(true);
+    const [quantidade, setQuantidade] = useState<string>('');
     const [livros, setLivros] = useState<Livro[]>([]);
     const [membros, setMembros] = useState<Membro[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -87,6 +106,7 @@ export default function EditEmprestimo() {
                 setDataEmprestimo(new Date(emp.dataEmprestimo));
                 setDataDevolucao(emp.dataDevolucao ? new Date(emp.dataDevolucao) : undefined);
                 setStatus(emp.status);
+                setQuantidade(emp.quantidade.toString());
                 setLoading(false);
             } catch (err) {
                 console.error(err);
@@ -97,16 +117,19 @@ export default function EditEmprestimo() {
         fetchEmprestimo();
     }, [id, livros, membros]);
 
-    function dateToIsoAtMidnightLocal(date?: Date | undefined) {
-        if (!date) return null;
-        const localMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-        return localMidnight.toISOString();
-    }
+    /* Helper removed (externalized) */
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setSaving(true);
         setError(null);
+
+        if (!quantidade || parseInt(quantidade) <= 0) {
+            setError("Informe uma quantidade válida.");
+            setSaving(false);
+            return;
+        }
+
         const userSession = auth.getUserSession();
 
         try {
@@ -120,6 +143,7 @@ export default function EditEmprestimo() {
                 dataEmprestimo: dataEmprestimoISO,
                 dataDevolucao: dataDevolucaoISO,
                 status,
+                quantidade: parseInt(quantidade)
             },
                 {
                     headers: {
@@ -136,17 +160,7 @@ export default function EditEmprestimo() {
         }
     };
 
-    // Loading Skeleton
-    const LoadingSkeleton = () => (
-        <div className="space-y-6">
-            {[...Array(4)].map((_, i) => (
-                <div key={i} className="space-y-2">
-                    <div className="skeleton h-4 w-24 rounded" />
-                    <div className="skeleton h-12 w-full rounded-xl" />
-                </div>
-            ))}
-        </div>
-    );
+    // Loading Skeleton externalized
 
     if (fetchError) {
         return (
@@ -271,6 +285,27 @@ export default function EditEmprestimo() {
                                         </SelectContent>
                                     </Select>
                                 </div>
+                            </div>
+
+                            {/* Quantidade */}
+                            <div className="form-group">
+                                <label className="form-label text-xs flex items-center space-x-1.5">
+                                    <FiBook className="text-indigo-500" size={14} />
+                                    <span>Quantidade</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={quantidade}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === '' || /^\d+$/.test(val)) {
+                                            setQuantidade(val);
+                                        }
+                                    }}
+                                    required
+                                    placeholder="Qtd"
+                                    className="input-modern"
+                                />
                             </div>
 
                             {/* Datas em grid */}

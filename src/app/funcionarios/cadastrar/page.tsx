@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent, useRef, useEffect } from 'react';
+import { useState, FormEvent, useRef, useEffect, useCallback } from 'react';
 import api from '@/services/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -26,7 +26,7 @@ export default function CreateFuncionario() {
     const senhaRef = useRef<HTMLInputElement>(null);
     const submitButtonRef = useRef<HTMLButtonElement>(null);
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = useCallback(async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
@@ -50,7 +50,7 @@ export default function CreateFuncionario() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [auth, nome, cargo, login, senha, router]);
 
     useEffect(() => {
         const cycleRefs = [nomeRef, cargoRef, loginRef, senhaRef];
