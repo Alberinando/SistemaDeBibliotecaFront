@@ -6,11 +6,13 @@ export default withAuth(
         const { pathname } = req.nextUrl;
         const token = req.nextauth.token;
 
-        // Se o usuário está logado e tenta acessar a página de login
-        if (pathname === "/" && token) {
+        // APENAS redirecionar se estiver na página de login E estiver logado
+        // Não redirecionar de outras rotas!
+        if ((pathname === "/" || pathname === "/login") && token) {
             return NextResponse.redirect(new URL("/livros", req.url));
         }
 
+        // Para todas outras rotas, continuar normalmente
         return NextResponse.next();
     },
     {
