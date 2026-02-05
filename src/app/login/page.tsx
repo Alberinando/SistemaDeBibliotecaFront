@@ -233,7 +233,6 @@ export default function LoginPage() {
 
                             {/* Sign Up Link */}
                             <p className="text-center text-sm text-gray-600">
-                                Novo funcionário?{" "}
                                 <a href="/cadastro" className="font-semibold text-indigo-600 hover:text-indigo-500 hover:underline">
                                     Cadastre-se aqui
                                 </a>
