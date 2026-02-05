@@ -1,9 +1,11 @@
 "use client";
-import React, { useState, FormEvent, useEffect, useCallback } from "react";
+import React, { useState, FormEvent, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
-import { FaBook, FaUser, FaLock, FaArrowRight } from "react-icons/fa";
-import { motion } from "framer-motion";
+import api from '@/services/api';
+import { FaBook, FaUser, FaLock, FaArrowRight, FaArrowLeft } from "react-icons/fa";
+import { FiUser, FiBriefcase, FiLogIn, FiLock, FiCheckCircle } from 'react-icons/fi';
+import { motion, AnimatePresence } from "framer-motion";
 
 // Externalized Loading Component
 const LoadingState = () => (
@@ -23,10 +25,24 @@ const LoadingState = () => (
 );
 
 export default function LoginPage() {
-    const [login, setLogin] = useState<string>("");
-    const [senha, setSenha] = useState<string>("");
+    // Shared State
+    const [isRegistering, setIsRegistering] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>("");
+    const [successMsg, setSuccessMsg] = useState<string>("");
+
+    // Login State
+    const [login, setLogin] = useState<string>("");
+    const [senha, setSenha] = useState<string>("");
+
+    // Registration State
+    const [regNome, setRegNome] = useState<string>("");
+    const [regCargo, setRegCargo] = useState<string>("");
+    const [regLogin, setRegLogin] = useState<string>("");
+    const [regSenha, setRegSenha] = useState<string>("");
+
+    // Refs (mostly for preventing auto-focus issues or keyboard nav if needed)
+    const loginRef = useRef<HTMLInputElement>(null);
 
     const router = useRouter();
     const { data: session, status } = useSession();
@@ -38,9 +54,10 @@ export default function LoginPage() {
         }
     }, [status, router]);
 
-    const handleSubmit = useCallback(async (e: FormEvent) => {
+    const handleLogin = useCallback(async (e: FormEvent) => {
         e.preventDefault();
         setError("");
+        setSuccessMsg("");
         setLoading(true);
 
         try {
@@ -63,18 +80,54 @@ export default function LoginPage() {
         }
     }, [login, senha, router]);
 
+    const handleRegister = useCallback(async (e: FormEvent) => {
+        e.preventDefault();
+        setError("");
+        setSuccessMsg("");
+        setLoading(true);
+
+        try {
+            await api.post('/v1/funcionario', {
+                nome: regNome,
+                cargo: regCargo,
+                login: regLogin,
+                senha: regSenha,
+            });
+
+            setSuccessMsg("Cadastro realizado com sucesso! Faça login abaixo.");
+            setIsRegistering(false); // Switch back to login view
+            // Optional: Prefill login
+            setLogin(regLogin);
+            setSenha("");
+            // Clear registration form
+            setRegNome("");
+            setRegCargo("");
+            setRegLogin("");
+            setRegSenha("");
+
+        } catch (err: any) {
+            console.error(err);
+            if (err.response?.status === 403 || err.response?.status === 401) {
+                setError('Permissão negada. O cadastro público pode não estar habilitado na API.');
+            } else {
+                setError('Falha ao cadastrar funcionário. Verifique os dados e tente novamente.');
+            }
+        } finally {
+            setLoading(false);
+        }
+    }, [regNome, regCargo, regLogin, regSenha]);
+
 
     if (status === "loading") {
         return <LoadingState />;
     }
 
-    // Não renderiza o formulário se já estiver logado
     if (status === "authenticated") {
         return null;
     }
 
     return (
-        <div className="min-h-screen flex">
+        <div className="h-screen w-screen flex overflow-hidden">
             {/* Left Side - Branding */}
             <div
                 className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative overflow-hidden"
@@ -88,6 +141,7 @@ export default function LoginPage() {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl" />
 
                 <motion.div
+                    key={isRegistering ? "register-brand" : "login-brand"}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
@@ -99,25 +153,19 @@ export default function LoginPage() {
                     </div>
 
                     <h1 className="text-4xl font-bold text-white mb-4">
-                        Sistema de Biblioteca
+                        {isRegistering ? "Junte-se a Nós" : "Sistema de Biblioteca"}
                     </h1>
                     <p className="text-indigo-200 text-lg leading-relaxed">
-                        Gerencie seu acervo de forma inteligente. Controle empréstimos,
-                        membros e funcionários em uma única plataforma.
+                        {isRegistering
+                            ? "Crie sua conta no Sistema de Biblioteca e comece a gerenciar seu acervo hoje mesmo."
+                            : "Gerencie seu acervo de forma inteligente. Controle empréstimos, membros e funcionários em uma única plataforma."}
                     </p>
-
-
                 </motion.div>
             </div>
 
-            {/* Right Side - Login Form */}
-            <div className="flex-1 flex items-center justify-center p-8 bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20">
-                <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="w-full max-w-md"
-                >
+            {/* Right Side - Forms */}
+            <div className="flex-1 flex items-center justify-center p-8 bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20 h-full overflow-y-auto">
+                <div className="w-full max-w-md">
                     {/* Mobile Logo */}
                     <div className="lg:hidden flex flex-col items-center mb-8">
                         <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30 mb-4">
@@ -126,125 +174,292 @@ export default function LoginPage() {
                         <h1 className="text-2xl font-bold text-gray-800">Biblioteca</h1>
                     </div>
 
-                    {/* Card */}
-                    <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl shadow-indigo-500/10 border border-white/50 p-8">
-                        <div className="text-center mb-8">
-                            <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                                Bem-vindo de volta!
-                            </h2>
-                            <p className="text-gray-500">
-                                Entre com suas credenciais para continuar
-                            </p>
-                        </div>
-
-                        {/* Error Message */}
-                        {error && (
+                    <AnimatePresence mode="wait">
+                        {isRegistering ? (
+                            /* REGISTRATION FORM */
                             <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-3"
+                                key="register-form"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                transition={{ duration: 0.3 }}
+                                className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl shadow-indigo-500/10 border border-white/50 p-8"
                             >
-                                <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                    <span className="text-white text-xs">!</span>
+                                <div className="text-center mb-6">
+                                    <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                                        Criar Nova Conta
+                                    </h2>
+                                    <p className="text-gray-500">
+                                        Preencha os dados abaixo
+                                    </p>
                                 </div>
-                                <p className="text-red-600 text-sm">{error}</p>
+                                <form onSubmit={handleRegister} className="space-y-4">
+                                    {/* Error Message */}
+                                    {error && (
+                                        <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-3 text-sm text-red-600">
+                                            <span>!</span><span>{error}</span>
+                                        </div>
+                                    )}
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Nome */}
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                                Nome
+                                            </label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <FiUser className="text-gray-400" />
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={regNome}
+                                                    onChange={e => setRegNome(e.target.value)}
+                                                    required
+                                                    placeholder="Seu nome"
+                                                    className="w-full pl-10 pr-3 py-2.5 bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-gray-800 placeholder-gray-400"
+                                                />
+                                            </div>
+                                        </div>
+                                        {/* Cargo */}
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                                Cargo
+                                            </label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <FiBriefcase className="text-gray-400" />
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={regCargo}
+                                                    onChange={e => setRegCargo(e.target.value)}
+                                                    required
+                                                    placeholder="Seu cargo"
+                                                    className="w-full pl-10 pr-3 py-2.5 bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-gray-800 placeholder-gray-400"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Login */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                            Login Desejado
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <FiLogIn className="text-gray-400" />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                value={regLogin}
+                                                onChange={e => setRegLogin(e.target.value)}
+                                                required
+                                                placeholder="Nome de usuário"
+                                                className="w-full pl-10 pr-3 py-2.5 bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-gray-800 placeholder-gray-400"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Senha */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                            Senha
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <FiLock className="text-gray-400" />
+                                            </div>
+                                            <input
+                                                type="password"
+                                                value={regSenha}
+                                                onChange={e => setRegSenha(e.target.value)}
+                                                required
+                                                placeholder="Crie uma senha forte"
+                                                className="w-full pl-10 pr-3 py-2.5 bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-gray-800 placeholder-gray-400"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full flex items-center justify-center space-x-2 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                <span>Salvando...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span>Criar Conta</span>
+                                            </>
+                                        )}
+                                    </button>
+
+                                    <div className="text-center pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsRegistering(false);
+                                                setError("");
+                                            }}
+                                            className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors flex items-center justify-center space-x-1 mx-auto cursor-pointer"
+                                        >
+                                            <FaArrowLeft />
+                                            <span>Voltar para Login</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </motion.div>
+                        ) : (
+                            /* LOGIN FORM */
+                            <motion.div
+                                key="login-form"
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 20 }}
+                                transition={{ duration: 0.3 }}
+                                className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl shadow-indigo-500/10 border border-white/50 p-8"
+                            >
+                                <div className="text-center mb-8">
+                                    <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                                        Bem-vindo de volta!
+                                    </h2>
+                                    <p className="text-gray-500">
+                                        Entre com suas credenciais para continuar
+                                    </p>
+                                </div>
+
+                                {/* Success Message (from Registration) */}
+                                {successMsg && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-start space-x-3"
+                                    >
+                                        <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            <FiCheckCircle className="text-white text-xs" />
+                                        </div>
+                                        <p className="text-green-600 text-sm">{successMsg}</p>
+                                    </motion.div>
+                                )}
+
+                                {/* Error Message */}
+                                {error && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-3"
+                                    >
+                                        <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            <span className="text-white text-xs">!</span>
+                                        </div>
+                                        <p className="text-red-600 text-sm">{error}</p>
+                                    </motion.div>
+                                )}
+
+                                <form onSubmit={handleLogin} className="space-y-5">
+                                    {/* Login Field */}
+                                    <div>
+                                        <label htmlFor="login" className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Login
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <FaUser className="text-gray-400" />
+                                            </div>
+                                            <input
+                                                ref={loginRef}
+                                                type="text"
+                                                id="login"
+                                                name="login"
+                                                autoComplete="username"
+                                                value={login}
+                                                onChange={(e) => setLogin(e.target.value)}
+                                                required
+                                                placeholder="Digite seu login"
+                                                className="w-full pl-11 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all duration-200 text-gray-800 placeholder-gray-400"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Password Field */}
+                                    <div>
+                                        <label htmlFor="senha" className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Senha
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <FaLock className="text-gray-400" />
+                                            </div>
+                                            <input
+                                                type="password"
+                                                id="senha"
+                                                name="senha"
+                                                autoComplete="current-password"
+                                                value={senha}
+                                                onChange={(e) => setSenha(e.target.value)}
+                                                required
+                                                placeholder="Digite sua senha"
+                                                className="w-full pl-11 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all duration-200 text-gray-800 placeholder-gray-400"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Options: Remember Me */}
+                                    <div className="flex items-center justify-between">
+                                        <label className="flex items-center space-x-2 cursor-pointer">
+                                            <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                                            <span className="text-sm text-gray-600">Lembrar de mim</span>
+                                        </label>
+                                    </div>
+
+                                    {/* Submit Button */}
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full flex items-center justify-center space-x-2 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                <span>Entrando...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span>Entrar</span>
+                                                <FaArrowRight className="text-sm" />
+                                            </>
+                                        )}
+                                    </button>
+
+                                    {/* Sign Up Link */}
+                                    <p className="text-center text-sm text-gray-600">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsRegistering(true);
+                                                setError("");
+                                                setSuccessMsg("");
+                                            }}
+                                            className="font-semibold text-indigo-600 hover:text-indigo-500 hover:underline cursor-pointer"
+                                        >
+                                            Cadastre-se aqui
+                                        </button>
+                                    </p>
+                                </form>
                             </motion.div>
                         )}
-
-                        <form onSubmit={handleSubmit} className="space-y-5">
-                            {/* Login Field */}
-                            <div>
-                                <label htmlFor="login" className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Login
-                                </label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <FaUser className="text-gray-400" />
-                                    </div>
-                                    <input
-                                        type="text"
-                                        id="login"
-                                        name="login"
-                                        autoComplete="username"
-                                        value={login}
-                                        onChange={(e) => setLogin(e.target.value)}
-                                        required
-                                        placeholder="Digite seu login"
-                                        className="w-full pl-11 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all duration-200 text-gray-800 placeholder-gray-400"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Password Field */}
-                            <div>
-                                <label htmlFor="senha" className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Senha
-                                </label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <FaLock className="text-gray-400" />
-                                    </div>
-                                    <input
-                                        type="password"
-                                        id="senha"
-                                        name="senha"
-                                        autoComplete="current-password"
-                                        value={senha}
-                                        onChange={(e) => setSenha(e.target.value)}
-                                        required
-                                        placeholder="Digite sua senha"
-                                        className="w-full pl-11 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all duration-200 text-gray-800 placeholder-gray-400"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Options: Remember Me & Forgot Password */}
-                            <div className="flex items-center justify-between">
-                                <label className="flex items-center space-x-2 cursor-pointer">
-                                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                                    <span className="text-sm text-gray-600">Lembrar de mim</span>
-                                </label>
-                                {/* <a href="#" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                                    Esqueceu a senha?
-                                </a> */}
-                            </div>
-
-                            {/* Submit Button */}
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full flex items-center justify-center space-x-2 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none cursor-pointer"
-                            >
-                                {loading ? (
-                                    <>
-                                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        <span>Entrando...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>Entrar</span>
-                                        <FaArrowRight className="text-sm" />
-                                    </>
-                                )}
-                            </button>
-
-                            {/* Sign Up Link */}
-                            <p className="text-center text-sm text-gray-600">
-                                <a href="/cadastro" className="font-semibold text-indigo-600 hover:text-indigo-500 hover:underline">
-                                    Cadastre-se aqui
-                                </a>
-                            </p>
-                        </form>
-                    </div>
+                    </AnimatePresence>
 
                     {/* Footer */}
                     <p className="text-center text-gray-400 text-sm mt-8">
                         Sistema de Gerenciamento de Biblioteca
                     </p>
-                </motion.div>
+                </div>
             </div>
         </div>
     );
