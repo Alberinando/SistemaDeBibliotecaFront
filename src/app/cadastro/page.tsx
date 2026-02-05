@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, FormEvent, useRef, useEffect, useCallback } from 'react';
 import api from '@/services/api';
 import { useRouter } from 'next/navigation';
