@@ -17,6 +17,19 @@ interface EmprestimoPage {
     totalElements: number;
 }
 
+// Externalized Static Component
+const LoadingSkeleton = () => (
+    <div className="space-y-4">
+        {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-4 p-4 border border-gray-100 rounded-xl">
+                <div className="skeleton h-10 w-10 rounded-full" />
+                <div className="skeleton h-4 w-48 rounded" />
+                <div className="skeleton h-4 w-24 rounded ml-auto" />
+            </div>
+        ))}
+    </div>
+);
+
 export default function HistoricoMembro() {
     const params = useParams();
     const id = Number(params?.id);
@@ -104,15 +117,7 @@ export default function HistoricoMembro() {
 
                 {/* Content */}
                 {loading ? (
-                    <div className="space-y-4">
-                        {[...Array(5)].map((_, i) => (
-                            <div key={i} className="flex items-center space-x-4 p-4 border border-gray-100 rounded-xl">
-                                <div className="skeleton h-10 w-10 rounded-full" />
-                                <div className="skeleton h-4 w-48 rounded" />
-                                <div className="skeleton h-4 w-24 rounded ml-auto" />
-                            </div>
-                        ))}
-                    </div>
+                    <LoadingSkeleton />
                 ) : error ? (
                     <div className="text-center py-12 bg-red-50 rounded-xl border border-red-100">
                         <FiAlertCircle className="mx-auto h-12 w-12 text-red-400 mb-4" />
