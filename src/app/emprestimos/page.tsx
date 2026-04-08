@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '@/services/api';
-import { FiEdit2, FiTrash2, FiPlus, FiRepeat, FiChevronLeft, FiChevronRight, FiAlertTriangle, FiCheckCircle } from 'react-icons/fi';
+import { Pencil, Trash2, Plus, ArrowLeftRight, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Emprestimo, EmprestimoPage } from "@/interface/EmprestimoPros";
@@ -31,19 +31,19 @@ const EmptyState = () => (
         className="empty-state"
     >
         <div className="empty-state-icon">
-            <FiRepeat size={36} />
+            <ArrowLeftRight size={36} />
         </div>
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+        <h3 className="text-xl font-semibold text-foreground mb-2">
             Nenhum empréstimo registrado
         </h3>
-        <p className="text-gray-500 mb-6">
+        <p className="text-muted-foreground mb-6">
             Comece registrando o primeiro empréstimo
         </p>
         <Link
             href="/emprestimos/cadastrar"
             className="btn-success inline-flex items-center space-x-2"
         >
-            <FiPlus />
+            <Plus size={16} />
             <span>Cadastrar Primeiro Empréstimo</span>
         </Link>
     </motion.div>
@@ -141,7 +141,6 @@ export default function ListaEmprestimos() {
     const handleDevolucao = useCallback(async (emprestimo: Emprestimo) => {
         if (!confirm(`Confirmar devolução do livro "${emprestimo.livros.titulo}"?`)) return;
         try {
-            // Atualiza o empréstimo definindo dataDevolucao como hoje e status como false (encerrado)
             await api.put('/v1/emprestimos', {
                 ...emprestimo,
                 livros: emprestimo.livros.id,
@@ -156,9 +155,6 @@ export default function ListaEmprestimos() {
         }
     }, [fetchEmprestimos]);
 
-    // Loading Skeleton externalized
-    // Empty State externalized
-
     return (
         <>
             <motion.div
@@ -171,16 +167,16 @@ export default function ListaEmprestimos() {
                     <div>
                         <h1 className="page-title">Lista de Empréstimos</h1>
                         {!loading && !error && emprestimos.length > 0 && (
-                            <p className="text-gray-500 text-sm mt-1">
+                            <p className="text-muted-foreground text-sm mt-1">
                                 {totalElements} empréstimo{totalElements !== 1 ? 's' : ''} registrado{totalElements !== 1 ? 's' : ''}
                             </p>
                         )}
                     </div>
                     <Link
                         href="/emprestimos/cadastrar"
-                        className="btn-gradient flex items-center space-x-2"
+                        className="btn-primary flex items-center space-x-2"
                     >
-                        <FiPlus />
+                        <Plus size={16} />
                         <span>Cadastrar Empréstimo</span>
                     </Link>
                 </div>
@@ -190,10 +186,10 @@ export default function ListaEmprestimos() {
                     <LoadingSkeleton />
                 ) : error ? (
                     <div className="text-center py-8">
-                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <FiAlertTriangle className="text-red-500 text-2xl" />
+                        <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <AlertTriangle className="text-destructive" size={24} />
                         </div>
-                        <p className="text-red-500 font-medium">{error}</p>
+                        <p className="text-destructive font-medium">{error}</p>
                         <button
                             onClick={() => fetchEmprestimos()}
                             className="mt-4 btn-ghost"
@@ -206,7 +202,7 @@ export default function ListaEmprestimos() {
                 ) : (
                     <>
                         {/* Desktop Table */}
-                        <div className="hidden lg:block overflow-x-auto rounded-xl border border-gray-200/50">
+                        <div className="hidden lg:block overflow-x-auto rounded-xl border border-border">
                             <table className="table-modern">
                                 <thead>
                                     <tr>
@@ -227,28 +223,28 @@ export default function ListaEmprestimos() {
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: index * 0.03 }}
                                         >
-                                            <td className="font-mono text-gray-500">
+                                            <td className="font-mono text-muted-foreground">
                                                 #{emprestimo.id}
                                             </td>
-                                            <td className="font-medium text-gray-800">
+                                            <td className="font-medium text-foreground">
                                                 {emprestimo.livros.titulo}
                                             </td>
                                             <td>
                                                 <div className="flex items-center space-x-2">
-                                                    <div className="w-7 h-7 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                                                    <div className="w-7 h-7 bg-emerald-600 rounded-full flex items-center justify-center text-white text-xs font-medium">
                                                         {emprestimo.membros.nome.charAt(0).toUpperCase()}
                                                     </div>
-                                                    <span className="text-gray-600">
+                                                    <span className="text-muted-foreground">
                                                         {emprestimo.membros.nome}
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="text-gray-600">
+                                            <td className="text-muted-foreground">
                                                 {new Date(emprestimo.dataEmprestimo).toLocaleDateString('pt-BR')}
                                             </td>
-                                            <td className="text-gray-600">
+                                            <td className="text-muted-foreground">
                                                 {emprestimo.dataDevolucao === ''
-                                                    ? <span className="text-gray-400">—</span>
+                                                    ? <span className="text-muted-foreground/50">—</span>
                                                     : new Date(emprestimo.dataDevolucao).toLocaleDateString('pt-BR')}
                                             </td>
                                             <td>
@@ -261,10 +257,10 @@ export default function ListaEmprestimos() {
                                                     {!emprestimo.dataDevolucao && emprestimo.status && (
                                                         <button
                                                             onClick={() => handleDevolucao(emprestimo)}
-                                                            className="action-btn text-indigo-600 bg-indigo-50 hover:bg-indigo-100"
+                                                            className="action-btn text-primary bg-primary/10 hover:bg-primary/20"
                                                             title="Realizar Devolução"
                                                         >
-                                                            <FiCheckCircle size={18} />
+                                                            <CheckCircle size={18} />
                                                         </button>
                                                     )}
                                                     <Link
@@ -272,7 +268,7 @@ export default function ListaEmprestimos() {
                                                         className="action-btn action-btn-edit"
                                                         title="Editar"
                                                     >
-                                                        <FiEdit2 size={18} />
+                                                        <Pencil size={18} />
                                                     </Link>
                                                     <button
                                                         onClick={() => {
@@ -282,7 +278,7 @@ export default function ListaEmprestimos() {
                                                         className="action-btn action-btn-delete cursor-pointer"
                                                         title="Excluir"
                                                     >
-                                                        <FiTrash2 size={18} />
+                                                        <Trash2 size={18} />
                                                     </button>
                                                 </div>
                                             </td>
@@ -300,24 +296,24 @@ export default function ListaEmprestimos() {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.03 }}
-                                    className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+                                    className="bg-card rounded-xl border border-border p-4 shadow-sm"
                                 >
                                     <div className="flex items-start justify-between mb-3">
                                         <div className="flex-1">
-                                            <p className="font-medium text-gray-800 text-base">
+                                            <p className="font-medium text-foreground text-base">
                                                 {emprestimo.livros.titulo}
                                             </p>
                                             <div className="flex items-center space-x-2 mt-1">
-                                                <div className="w-5 h-5 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                                                <div className="w-5 h-5 bg-emerald-600 rounded-full flex items-center justify-center text-white text-xs font-medium">
                                                     {emprestimo.membros.nome.charAt(0).toUpperCase()}
                                                 </div>
-                                                <span className="text-gray-500 text-sm">
+                                                <span className="text-muted-foreground text-sm">
                                                     {emprestimo.membros.nome}
                                                 </span>
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end gap-1">
-                                            <span className="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                                            <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
                                                 #{emprestimo.id}
                                             </span>
                                             <span className={`badge text-xs ${emprestimo.status ? 'badge-success' : 'badge-warning'}`}>
@@ -325,28 +321,28 @@ export default function ListaEmprestimos() {
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3 border-t border-gray-100 pt-3">
+                                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-3 border-t border-border pt-3">
                                         <div>
-                                            <span className="text-gray-400">Empréstimo:</span>{' '}
-                                            <span className="font-medium text-gray-600">
+                                            <span className="text-muted-foreground/70">Empréstimo:</span>{' '}
+                                            <span className="font-medium text-foreground">
                                                 {new Date(emprestimo.dataEmprestimo).toLocaleDateString('pt-BR')}
                                             </span>
                                         </div>
                                         <div>
-                                            <span className="text-gray-400">Devolução:</span>{' '}
-                                            <span className="font-medium text-gray-600">
+                                            <span className="text-muted-foreground/70">Devolução:</span>{' '}
+                                            <span className="font-medium text-foreground">
                                                 {emprestimo.dataDevolucao === '' ? '—' : new Date(emprestimo.dataDevolucao).toLocaleDateString('pt-BR')}
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-end space-x-2 border-t border-gray-100 pt-3">
+                                    <div className="flex items-center justify-end space-x-2 border-t border-border pt-3">
                                         {!emprestimo.dataDevolucao && emprestimo.status && (
                                             <button
                                                 onClick={() => handleDevolucao(emprestimo)}
-                                                className="action-btn text-indigo-600 bg-indigo-50 hover:bg-indigo-100"
+                                                className="action-btn text-primary bg-primary/10 hover:bg-primary/20"
                                                 title="Realizar Devolução"
                                             >
-                                                <FiCheckCircle size={16} />
+                                                <CheckCircle size={16} />
                                             </button>
                                         )}
                                         <Link
@@ -354,7 +350,7 @@ export default function ListaEmprestimos() {
                                             className="action-btn action-btn-edit"
                                             title="Editar"
                                         >
-                                            <FiEdit2 size={16} />
+                                            <Pencil size={16} />
                                         </Link>
                                         <button
                                             onClick={() => {
@@ -364,7 +360,7 @@ export default function ListaEmprestimos() {
                                             className="action-btn action-btn-delete cursor-pointer"
                                             title="Excluir"
                                         >
-                                            <FiTrash2 size={16} />
+                                            <Trash2 size={16} />
                                         </button>
                                     </div>
                                 </motion.div>
@@ -378,7 +374,7 @@ export default function ListaEmprestimos() {
                                 disabled={page === 0}
                                 className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
-                                <FiChevronLeft />
+                                <ChevronLeft size={16} />
                                 <span className="hidden sm:inline">Anterior</span>
                             </button>
                             <div className="pagination-info">
@@ -390,7 +386,7 @@ export default function ListaEmprestimos() {
                                 className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
                                 <span className="hidden sm:inline">Próxima</span>
-                                <FiChevronRight />
+                                <ChevronRight size={16} />
                             </button>
                         </div>
                     </>
@@ -411,13 +407,13 @@ export default function ListaEmprestimos() {
                                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                                 className="modal-content"
                             >
-                                <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <FiTrash2 className="text-red-500 text-2xl" />
+                                <div className="w-14 h-14 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Trash2 className="text-destructive" size={24} />
                                 </div>
                                 <h2 className="text-xl font-bold text-center mb-2">
                                     Confirmar Exclusão
                                 </h2>
-                                <p className="text-gray-500 text-center mb-6">
+                                <p className="text-muted-foreground text-center mb-6">
                                     Tem certeza que deseja excluir este empréstimo? Esta ação não pode ser desfeita.
                                 </p>
                                 <div className="flex space-x-3">

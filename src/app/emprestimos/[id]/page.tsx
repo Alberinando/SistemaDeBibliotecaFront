@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDownIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FiBook, FiUser, FiCalendar, FiCheck, FiArrowLeft, FiSave } from 'react-icons/fi';
+import { BookOpen, User, Calendar as CalendarIcon, Check, ArrowLeft, Save } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // Externalized Helpers & Components
@@ -198,7 +198,7 @@ export default function EditEmprestimo() {
                             href="/emprestimos"
                             className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
                         >
-                            <FiArrowLeft size={16} />
+                            <ArrowLeft size={16} />
                         </Link>
                         <div>
                             <h1 className="page-title text-lg">Editar Empréstimo</h1>
@@ -231,7 +231,7 @@ export default function EditEmprestimo() {
                                 {/* Livro */}
                                 <div className="form-group">
                                     <label className="form-label text-xs flex items-center space-x-1.5">
-                                        <FiBook className="text-indigo-500" size={14} />
+                                        <BookOpen className="text-indigo-500" size={14} />
                                         <span>Livro</span>
                                     </label>
                                     <Select
@@ -260,7 +260,7 @@ export default function EditEmprestimo() {
                                 {/* Membro */}
                                 <div className="form-group">
                                     <label className="form-label text-xs flex items-center space-x-1.5">
-                                        <FiUser className="text-indigo-500" size={14} />
+                                        <User className="text-indigo-500" size={14} />
                                         <span>Membro</span>
                                     </label>
                                     <Select
@@ -290,7 +290,7 @@ export default function EditEmprestimo() {
                             {/* Quantidade */}
                             <div className="form-group">
                                 <label className="form-label text-xs flex items-center space-x-1.5">
-                                    <FiBook className="text-indigo-500" size={14} />
+                                    <BookOpen className="text-indigo-500" size={14} />
                                     <span>Quantidade</span>
                                 </label>
                                 <input
@@ -313,7 +313,7 @@ export default function EditEmprestimo() {
                                 {/* Data de Empréstimo */}
                                 <div className="form-group">
                                     <label className="form-label text-xs flex items-center space-x-1.5">
-                                        <FiCalendar className="text-indigo-500" size={14} />
+                                        <CalendarIcon className="text-indigo-500" size={14} />
                                         <span>Data Empréstimo</span>
                                     </label>
                                     <Popover open={openEmprestimo} onOpenChange={setOpenEmprestimo}>
@@ -340,7 +340,7 @@ export default function EditEmprestimo() {
                                 {/* Data de Devolução */}
                                 <div className="form-group">
                                     <label className="form-label text-xs flex items-center space-x-1.5">
-                                        <FiCalendar className="text-indigo-500" size={14} />
+                                        <CalendarIcon className="text-indigo-500" size={14} />
                                         <span>Data Devolução</span>
                                     </label>
                                     <Popover open={openDevolucao} onOpenChange={setOpenDevolucao}>
@@ -371,7 +371,7 @@ export default function EditEmprestimo() {
                                     <div className="flex items-center space-x-2">
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${status ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-500'
                                             }`}>
-                                            <FiCheck size={16} />
+                                            <Check size={16} />
                                         </div>
                                         <div>
                                             <p className="font-medium text-gray-800 text-sm">Status</p>
@@ -397,7 +397,7 @@ export default function EditEmprestimo() {
                                     href="/emprestimos"
                                     className="btn-ghost text-sm flex items-center space-x-1.5 px-3 py-1.5"
                                 >
-                                    <FiArrowLeft size={14} />
+                                    <ArrowLeft size={14} />
                                     <span>Voltar</span>
                                 </Link>
                                 <button
@@ -415,7 +415,7 @@ export default function EditEmprestimo() {
                                         </>
                                     ) : (
                                         <>
-                                            <FiSave size={14} />
+                                            <Save size={14} />
                                             <span>Atualizar</span>
                                         </>
                                     )}

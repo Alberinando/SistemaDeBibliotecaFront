@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from "@/resources/users/authentication.resourse";
 import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
-import { FiUser, FiBriefcase, FiLogIn, FiLock, FiArrowLeft, FiSave } from 'react-icons/fi';
+import { User, Briefcase, LogIn, Lock, ArrowLeft, Save } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function CreateFuncionario() {
@@ -134,7 +134,7 @@ export default function CreateFuncionario() {
                             href="/funcionarios"
                             className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
                         >
-                            <FiArrowLeft size={20} />
+                            <ArrowLeft size={20} />
                         </Link>
                         <div>
                             <h1 className="page-title">Cadastrar Novo Funcionário</h1>
@@ -162,7 +162,7 @@ export default function CreateFuncionario() {
                         {/* Nome */}
                         <div className="form-group">
                             <label className="form-label flex items-center space-x-2">
-                                <FiUser className="text-indigo-500" />
+                                <User className="text-indigo-500" />
                                 <span>Nome Completo</span>
                             </label>
                             <input
@@ -179,7 +179,7 @@ export default function CreateFuncionario() {
                         {/* Cargo */}
                         <div className="form-group">
                             <label className="form-label flex items-center space-x-2">
-                                <FiBriefcase className="text-indigo-500" />
+                                <Briefcase className="text-indigo-500" />
                                 <span>Cargo</span>
                             </label>
                             <input
@@ -196,7 +196,7 @@ export default function CreateFuncionario() {
                         {/* Login */}
                         <div className="form-group">
                             <label className="form-label flex items-center space-x-2">
-                                <FiLogIn className="text-indigo-500" />
+                                <LogIn className="text-indigo-500" />
                                 <span>Login</span>
                             </label>
                             <input
@@ -213,7 +213,7 @@ export default function CreateFuncionario() {
                         {/* Senha */}
                         <div className="form-group">
                             <label className="form-label flex items-center space-x-2">
-                                <FiLock className="text-indigo-500" />
+                                <Lock className="text-indigo-500" />
                                 <span>Senha</span>
                             </label>
                             <input
@@ -233,7 +233,7 @@ export default function CreateFuncionario() {
                                 href="/funcionarios"
                                 className="btn-ghost flex items-center space-x-2"
                             >
-                                <FiArrowLeft />
+                                <ArrowLeft />
                                 <span>Voltar</span>
                             </Link>
                             <button
@@ -252,7 +252,7 @@ export default function CreateFuncionario() {
                                     </>
                                 ) : (
                                     <>
-                                        <FiSave />
+                                        <Save />
                                         <span>Cadastrar</span>
                                     </>
                                 )}

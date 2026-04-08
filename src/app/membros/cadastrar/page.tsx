@@ -7,7 +7,7 @@ import formatTelefone from "@/util/formatTelefone";
 import formatCpf from "@/util/formatCpf";
 import { useAuth } from "@/resources/users/authentication.resourse";
 import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
-import { FiUser, FiPhone, FiMail, FiCreditCard, FiArrowLeft, FiSave } from 'react-icons/fi';
+import { User, Phone, Mail, CreditCard, ArrowLeft, Save } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function CreateMembro() {
@@ -128,7 +128,7 @@ export default function CreateMembro() {
                             href="/membros"
                             className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
                         >
-                            <FiArrowLeft size={16} />
+                            <ArrowLeft size={16} />
                         </Link>
                         <div>
                             <h1 className="page-title text-lg">Cadastrar Novo Membro</h1>
@@ -156,7 +156,7 @@ export default function CreateMembro() {
                         {/* Nome */}
                         <div className="form-group">
                             <label className="form-label text-xs flex items-center space-x-1.5">
-                                <FiUser className="text-indigo-500" size={14} />
+                                <User className="text-indigo-500" size={14} />
                                 <span>Nome Completo</span>
                             </label>
                             <input
@@ -175,7 +175,7 @@ export default function CreateMembro() {
                             {/* CPF */}
                             <div className="form-group">
                                 <label className="form-label text-xs flex items-center space-x-1.5">
-                                    <FiCreditCard className="text-indigo-500" size={14} />
+                                    <CreditCard className="text-indigo-500" size={14} />
                                     <span>CPF</span>
                                 </label>
                                 <input
@@ -196,7 +196,7 @@ export default function CreateMembro() {
                             {/* Telefone */}
                             <div className="form-group">
                                 <label className="form-label text-xs flex items-center space-x-1.5">
-                                    <FiPhone className="text-indigo-500" size={14} />
+                                    <Phone className="text-indigo-500" size={14} />
                                     <span>Telefone</span>
                                 </label>
                                 <input
@@ -218,7 +218,7 @@ export default function CreateMembro() {
                         {/* Email */}
                         <div className="form-group">
                             <label className="form-label text-xs flex items-center space-x-1.5">
-                                <FiMail className="text-indigo-500" size={14} />
+                                <Mail className="text-indigo-500" size={14} />
                                 <span>E-mail</span>
                             </label>
                             <input
@@ -238,7 +238,7 @@ export default function CreateMembro() {
                                 href="/membros"
                                 className="btn-ghost text-sm flex items-center space-x-1.5 px-3 py-1.5"
                             >
-                                <FiArrowLeft size={14} />
+                                <ArrowLeft size={14} />
                                 <span>Voltar</span>
                             </Link>
                             <button
@@ -257,7 +257,7 @@ export default function CreateMembro() {
                                     </>
                                 ) : (
                                     <>
-                                        <FiSave size={14} />
+                                        <Save size={14} />
                                         <span>Cadastrar</span>
                                     </>
                                 )}

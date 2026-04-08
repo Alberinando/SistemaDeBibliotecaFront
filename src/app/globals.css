@@ -262,7 +262,7 @@
   }
 
   .toggle-switch input:checked+.toggle-slider {
-    background: var(--gradient-success);
+    background: var(--success);
   }
 
   .toggle-switch input:checked+.toggle-slider::before {

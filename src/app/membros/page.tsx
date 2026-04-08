@@ -1,10 +1,10 @@
 "use client"
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '@/services/api';
-import { FiEdit2, FiTrash2, FiPlus, FiUsers, FiChevronLeft, FiChevronRight, FiAlertTriangle, FiClock, FiEye } from 'react-icons/fi';
+import { Pencil, Trash2, Plus, Users, ChevronLeft, ChevronRight, AlertTriangle, Eye, History } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Membro, MembroPage } from "@/interface/MembrosProps";
+import { MembrosPage, Membro } from "@/interface/MembroProps";
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Externalized Static Components
@@ -14,7 +14,8 @@ const LoadingSkeleton = () => (
             <div key={i} className="flex items-center space-x-4 p-4">
                 <div className="skeleton h-6 w-12 rounded" />
                 <div className="skeleton h-6 flex-1 rounded" />
-                <div className="skeleton h-6 w-48 rounded" />
+                <div className="skeleton h-6 w-32 rounded" />
+                <div className="skeleton h-6 w-24 rounded" />
                 <div className="skeleton h-8 w-20 rounded" />
             </div>
         ))}
@@ -28,19 +29,19 @@ const EmptyState = () => (
         className="empty-state"
     >
         <div className="empty-state-icon">
-            <FiUsers size={36} />
+            <Users size={36} />
         </div>
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+        <h3 className="text-xl font-semibold text-foreground mb-2">
             Nenhum membro cadastrado
         </h3>
-        <p className="text-gray-500 mb-6">
-            Comece adicionando o primeiro membro da biblioteca
+        <p className="text-muted-foreground mb-6">
+            Comece adicionando o primeiro membro
         </p>
         <Link
             href="/membros/cadastrar"
             className="btn-success inline-flex items-center space-x-2"
         >
-            <FiPlus />
+            <Plus size={16} />
             <span>Cadastrar Primeiro Membro</span>
         </Link>
     </motion.div>
@@ -62,7 +63,7 @@ export default function ListaMembros() {
         setLoading(true);
         setError(null);
         try {
-            const response = await api.get<MembroPage>('/v1/membros', {
+            const response = await api.get<MembrosPage>('/v1/membros', {
                 params: { page, size: 10 }
             });
             setMembros(response.data.content);
@@ -83,7 +84,6 @@ export default function ListaMembros() {
                 router.push('/membros/cadastrar');
             }
         };
-
         window.addEventListener('keydown', handleGlobalShortcuts);
         return () => {
             window.removeEventListener('keydown', handleGlobalShortcuts);
@@ -96,7 +96,6 @@ export default function ListaMembros() {
 
     useEffect(() => {
         if (!showModal) return;
-
         const handleModalKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Enter') {
                 if (toDeleteId !== null) {
@@ -111,7 +110,6 @@ export default function ListaMembros() {
                 setToDeleteId(null);
             }
         };
-
         window.addEventListener('keydown', handleModalKeyDown);
         return () => {
             window.removeEventListener('keydown', handleModalKeyDown);
@@ -119,7 +117,7 @@ export default function ListaMembros() {
     }, [showModal, toDeleteId]);
 
     const handleDelete = useCallback(async () => {
-        if (!toDeleteId) return;
+        if (toDeleteId === null) return;
         try {
             await api.delete(`/v1/membros/${toDeleteId}`);
             setShowModal(false);
@@ -130,9 +128,6 @@ export default function ListaMembros() {
             alert('Erro ao excluir membro.');
         }
     }, [toDeleteId, fetchMembros]);
-
-    // Loading Skeleton externalized
-    // Empty State externalized
 
     return (
         <>
@@ -146,16 +141,16 @@ export default function ListaMembros() {
                     <div>
                         <h1 className="page-title">Lista de Membros</h1>
                         {!loading && !error && membros.length > 0 && (
-                            <p className="text-gray-500 text-sm mt-1">
+                            <p className="text-muted-foreground text-sm mt-1">
                                 {totalElements} membro{totalElements !== 1 ? 's' : ''} cadastrado{totalElements !== 1 ? 's' : ''}
                             </p>
                         )}
                     </div>
                     <Link
                         href="/membros/cadastrar"
-                        className="btn-gradient flex items-center space-x-2"
+                        className="btn-primary flex items-center space-x-2"
                     >
-                        <FiPlus />
+                        <Plus size={16} />
                         <span>Cadastrar Membro</span>
                     </Link>
                 </div>
@@ -165,10 +160,10 @@ export default function ListaMembros() {
                     <LoadingSkeleton />
                 ) : error ? (
                     <div className="text-center py-8">
-                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <FiAlertTriangle className="text-red-500 text-2xl" />
+                        <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <AlertTriangle className="text-destructive" size={24} />
                         </div>
-                        <p className="text-red-500 font-medium">{error}</p>
+                        <p className="text-destructive font-medium">{error}</p>
                         <button
                             onClick={() => fetchMembros()}
                             className="mt-4 btn-ghost"
@@ -181,13 +176,14 @@ export default function ListaMembros() {
                 ) : (
                     <>
                         {/* Desktop Table */}
-                        <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200/50">
+                        <div className="hidden md:block overflow-x-auto rounded-xl border border-border">
                             <table className="table-modern">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
                                         <th>Nome</th>
-                                        <th>E-mail</th>
+                                        <th>Email</th>
+                                        <th>Telefone</th>
                                         <th className="text-center">Ações</th>
                                     </tr>
                                 </thead>
@@ -199,44 +195,47 @@ export default function ListaMembros() {
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: index * 0.03 }}
                                         >
-                                            <td className="font-mono text-gray-500">
+                                            <td className="font-mono text-muted-foreground">
                                                 #{membro.id}
                                             </td>
                                             <td>
                                                 <div className="flex items-center space-x-3">
-                                                    <div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-medium">
                                                         {membro.nome.charAt(0).toUpperCase()}
                                                     </div>
-                                                    <span className="font-medium text-gray-800">
+                                                    <span className="font-medium text-foreground">
                                                         {membro.nome}
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="text-gray-600">
+                                            <td className="text-muted-foreground">
                                                 {membro.email}
+                                            </td>
+                                            <td className="text-muted-foreground font-mono text-sm">
+                                                {membro.telefone}
                                             </td>
                                             <td>
                                                 <div className="flex items-center justify-center space-x-2">
                                                     <Link
                                                         href={`/membros/${membro.id}/detalhes`}
-                                                        className="action-btn text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700"
-                                                        title="Ver Detalhes"
+                                                        className="action-btn text-primary bg-primary/10 hover:bg-primary/20"
+                                                        title="Detalhes"
                                                     >
-                                                        <FiEye size={18} />
+                                                        <Eye size={18} />
                                                     </Link>
                                                     <Link
                                                         href={`/membros/${membro.id}/historico`}
-                                                        className="action-btn text-blue-500 hover:bg-blue-50 hover:text-blue-700"
+                                                        className="action-btn text-amber-600 bg-amber-50 hover:bg-amber-100"
                                                         title="Histórico"
                                                     >
-                                                        <FiClock size={18} />
+                                                        <History size={18} />
                                                     </Link>
                                                     <Link
                                                         href={`/membros/${membro.id}/editar`}
                                                         className="action-btn action-btn-edit"
                                                         title="Editar"
                                                     >
-                                                        <FiEdit2 size={18} />
+                                                        <Pencil size={18} />
                                                     </Link>
                                                     <button
                                                         onClick={() => {
@@ -246,7 +245,7 @@ export default function ListaMembros() {
                                                         className="action-btn action-btn-delete cursor-pointer"
                                                         title="Excluir"
                                                     >
-                                                        <FiTrash2 size={18} />
+                                                        <Trash2 size={18} />
                                                     </button>
                                                 </div>
                                             </td>
@@ -264,58 +263,56 @@ export default function ListaMembros() {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.03 }}
-                                    className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+                                    className="bg-card rounded-xl border border-border p-4 shadow-sm"
                                 >
                                     <div className="flex items-start justify-between mb-3">
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center text-white font-medium">
+                                            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-medium">
                                                 {membro.nome.charAt(0).toUpperCase()}
                                             </div>
                                             <div>
-                                                <p className="font-medium text-gray-800">
+                                                <p className="font-medium text-foreground">
                                                     {membro.nome}
                                                 </p>
-                                                <p className="text-gray-500 text-sm">
+                                                <p className="text-muted-foreground text-sm">
                                                     {membro.email}
                                                 </p>
                                             </div>
                                         </div>
-                                        <span className="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                                        <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">
                                             #{membro.id}
                                         </span>
                                     </div>
-                                    <div className="flex items-center justify-end space-x-2">
-                                        <Link
-                                            href={`/membros/${membro.id}/detalhes`}
-                                            className="action-btn text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700"
-                                            title="Ver Detalhes"
-                                        >
-                                            <FiEye size={16} />
-                                        </Link>
-                                        <Link
-                                            href={`/membros/${membro.id}/historico`}
-                                            className="action-btn text-blue-500 hover:bg-blue-50 hover:text-blue-700"
-                                            title="Histórico"
-                                        >
-                                            <FiClock size={16} />
-                                        </Link>
-                                        <Link
-                                            href={`/membros/${membro.id}/editar`}
-                                            className="action-btn action-btn-edit"
-                                            title="Editar"
-                                        >
-                                            <FiEdit2 size={16} />
-                                        </Link>
-                                        <button
-                                            onClick={() => {
-                                                setShowModal(true);
-                                                setToDeleteId(membro.id);
-                                            }}
-                                            className="action-btn action-btn-delete cursor-pointer"
-                                            title="Excluir"
-                                        >
-                                            <FiTrash2 size={16} />
-                                        </button>
+                                    <div className="flex items-center justify-between border-t border-border pt-3">
+                                        <p className="text-sm text-muted-foreground">
+                                            <span className="font-mono">{membro.telefone}</span>
+                                        </p>
+                                        <div className="flex items-center space-x-2">
+                                            <Link
+                                                href={`/membros/${membro.id}/detalhes`}
+                                                className="action-btn text-primary bg-primary/10 hover:bg-primary/20"
+                                                title="Detalhes"
+                                            >
+                                                <Eye size={16} />
+                                            </Link>
+                                            <Link
+                                                href={`/membros/${membro.id}/editar`}
+                                                className="action-btn action-btn-edit"
+                                                title="Editar"
+                                            >
+                                                <Pencil size={16} />
+                                            </Link>
+                                            <button
+                                                onClick={() => {
+                                                    setShowModal(true);
+                                                    setToDeleteId(membro.id);
+                                                }}
+                                                className="action-btn action-btn-delete cursor-pointer"
+                                                title="Excluir"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </motion.div>
                             ))}
@@ -328,7 +325,7 @@ export default function ListaMembros() {
                                 disabled={page === 0}
                                 className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
-                                <FiChevronLeft />
+                                <ChevronLeft size={16} />
                                 <span className="hidden sm:inline">Anterior</span>
                             </button>
                             <div className="pagination-info">
@@ -340,7 +337,7 @@ export default function ListaMembros() {
                                 className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
                                 <span className="hidden sm:inline">Próxima</span>
-                                <FiChevronRight />
+                                <ChevronRight size={16} />
                             </button>
                         </div>
                     </>
@@ -361,13 +358,13 @@ export default function ListaMembros() {
                                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                                 className="modal-content"
                             >
-                                <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <FiTrash2 className="text-red-500 text-2xl" />
+                                <div className="w-14 h-14 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Trash2 className="text-destructive" size={24} />
                                 </div>
                                 <h2 className="text-xl font-bold text-center mb-2">
                                     Confirmar Exclusão
                                 </h2>
-                                <p className="text-gray-500 text-center mb-6">
+                                <p className="text-muted-foreground text-center mb-6">
                                     Tem certeza que deseja excluir este membro? Esta ação não pode ser desfeita.
                                 </p>
                                 <div className="flex space-x-3">

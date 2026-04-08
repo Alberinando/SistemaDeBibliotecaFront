@@ -4,8 +4,7 @@ import { useState, FormEvent, useRef, useEffect, useCallback } from 'react';
 import api from '@/services/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FiUser, FiBriefcase, FiLogIn, FiLock, FiArrowLeft, FiSave, FiCheckCircle } from 'react-icons/fi';
-import { FaBook } from "react-icons/fa";
+import { User, Briefcase, LogIn, Lock, ArrowLeft, Save, CheckCircle, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Externalized Loading Component (Same as Login)
@@ -104,7 +103,7 @@ export default function PublicRegistrationPage() {
                     className="text-center"
                 >
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <FiCheckCircle className="text-green-600 text-4xl" />
+                        <CheckCircle className="text-green-600 text-4xl" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">Cadastro Realizado!</h2>
                     <p className="text-gray-500">Redirecionando para o login...</p>
@@ -134,7 +133,7 @@ export default function PublicRegistrationPage() {
                     className="relative z-10 text-center max-w-lg"
                 >
                     <div className="w-24 h-24 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-purple-500/40">
-                        <FaBook className="text-white text-4xl" />
+                        <BookOpen className="text-white text-4xl" />
                     </div>
 
                     <h1 className="text-4xl font-bold text-white mb-4">
@@ -157,7 +156,7 @@ export default function PublicRegistrationPage() {
                     {/* Mobile Logo */}
                     <div className="lg:hidden flex flex-col items-center mb-8">
                         <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30 mb-4">
-                            <FaBook className="text-white text-2xl" />
+                            <BookOpen className="text-white text-2xl" />
                         </div>
                         <h1 className="text-2xl font-bold text-gray-800">Biblioteca</h1>
                     </div>
@@ -198,7 +197,7 @@ export default function PublicRegistrationPage() {
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <FiUser className="text-gray-400" />
+                                            <User className="text-gray-400" />
                                         </div>
                                         <input
                                             ref={nomeRef}
@@ -219,7 +218,7 @@ export default function PublicRegistrationPage() {
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <FiBriefcase className="text-gray-400" />
+                                            <Briefcase className="text-gray-400" />
                                         </div>
                                         <input
                                             ref={cargoRef}
@@ -241,7 +240,7 @@ export default function PublicRegistrationPage() {
                                 </label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <FiLogIn className="text-gray-400" />
+                                        <LogIn className="text-gray-400" />
                                     </div>
                                     <input
                                         ref={loginRef}
@@ -262,7 +261,7 @@ export default function PublicRegistrationPage() {
                                 </label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <FiLock className="text-gray-400" />
+                                        <Lock className="text-gray-400" />
                                     </div>
                                     <input
                                         ref={senhaRef}
@@ -294,7 +293,7 @@ export default function PublicRegistrationPage() {
                                         </>
                                     ) : (
                                         <>
-                                            <FiSave />
+                                            <Save />
                                             <span>Criar Conta</span>
                                         </>
                                     )}
@@ -306,7 +305,7 @@ export default function PublicRegistrationPage() {
                                     href="/login"
                                     className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors flex items-center justify-center space-x-1"
                                 >
-                                    <FiArrowLeft />
+                                    <ArrowLeft />
                                     <span>Voltar para Login</span>
                                 </Link>
                             </div>

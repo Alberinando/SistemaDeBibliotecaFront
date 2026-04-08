@@ -1,10 +1,10 @@
 "use client"
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '@/services/api';
-import { FiEdit2, FiTrash2, FiPlus, FiBook, FiChevronLeft, FiChevronRight, FiAlertTriangle } from 'react-icons/fi';
+import { Pencil, Trash2, Plus, BookOpen, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Livro, LivroPage } from "@/interface/LivroPros";
+import { Livro, LivroPage } from "@/interface/LivroProps";
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Externalized Static Components
@@ -15,7 +15,7 @@ const LoadingSkeleton = () => (
                 <div className="skeleton h-6 w-12 rounded" />
                 <div className="skeleton h-6 flex-1 rounded" />
                 <div className="skeleton h-6 w-24 rounded" />
-                <div className="skeleton h-6 w-32 rounded" />
+                <div className="skeleton h-6 w-20 rounded" />
                 <div className="skeleton h-8 w-20 rounded" />
             </div>
         ))}
@@ -29,19 +29,19 @@ const EmptyState = () => (
         className="empty-state"
     >
         <div className="empty-state-icon">
-            <FiBook size={36} />
+            <BookOpen size={36} />
         </div>
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+        <h3 className="text-xl font-semibold text-foreground mb-2">
             Nenhum livro cadastrado
         </h3>
-        <p className="text-gray-500 mb-6">
+        <p className="text-muted-foreground mb-6">
             Comece adicionando o primeiro livro ao acervo
         </p>
         <Link
             href="/livros/cadastrar"
             className="btn-success inline-flex items-center space-x-2"
         >
-            <FiPlus />
+            <Plus size={16} />
             <span>Cadastrar Primeiro Livro</span>
         </Link>
     </motion.div>
@@ -84,7 +84,6 @@ export default function ListaLivros() {
                 router.push('/livros/cadastrar');
             }
         };
-
         window.addEventListener('keydown', handleGlobalShortcuts);
         return () => {
             window.removeEventListener('keydown', handleGlobalShortcuts);
@@ -97,7 +96,6 @@ export default function ListaLivros() {
 
     useEffect(() => {
         if (!showModal) return;
-
         const handleModalKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Enter') {
                 if (toDeleteId !== null) {
@@ -112,7 +110,6 @@ export default function ListaLivros() {
                 setToDeleteId(null);
             }
         };
-
         window.addEventListener('keydown', handleModalKeyDown);
         return () => {
             window.removeEventListener('keydown', handleModalKeyDown);
@@ -120,7 +117,7 @@ export default function ListaLivros() {
     }, [showModal, toDeleteId]);
 
     const handleDelete = useCallback(async () => {
-        if (!toDeleteId) return;
+        if (toDeleteId === null) return;
         try {
             await api.delete(`/v1/livros/${toDeleteId}`);
             setShowModal(false);
@@ -131,9 +128,6 @@ export default function ListaLivros() {
             alert('Erro ao excluir livro.');
         }
     }, [toDeleteId, fetchLivros]);
-
-    // Loading Skeleton externalized
-    // Empty State externalized
 
     return (
         <>
@@ -147,16 +141,16 @@ export default function ListaLivros() {
                     <div>
                         <h1 className="page-title">Lista de Livros</h1>
                         {!loading && !error && livros.length > 0 && (
-                            <p className="text-gray-500 text-sm mt-1">
-                                {totalElements} livro{totalElements !== 1 ? 's' : ''} no acervo
+                            <p className="text-muted-foreground text-sm mt-1">
+                                {totalElements} livro{totalElements !== 1 ? 's' : ''} cadastrado{totalElements !== 1 ? 's' : ''}
                             </p>
                         )}
                     </div>
                     <Link
                         href="/livros/cadastrar"
-                        className="btn-gradient flex items-center space-x-2"
+                        className="btn-primary flex items-center space-x-2"
                     >
-                        <FiPlus />
+                        <Plus size={16} />
                         <span>Cadastrar Livro</span>
                     </Link>
                 </div>
@@ -166,10 +160,10 @@ export default function ListaLivros() {
                     <LoadingSkeleton />
                 ) : error ? (
                     <div className="text-center py-8">
-                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <FiAlertTriangle className="text-red-500 text-2xl" />
+                        <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <AlertTriangle className="text-destructive" size={24} />
                         </div>
-                        <p className="text-red-500 font-medium">{error}</p>
+                        <p className="text-destructive font-medium">{error}</p>
                         <button
                             onClick={() => fetchLivros()}
                             className="mt-4 btn-ghost"
@@ -182,14 +176,14 @@ export default function ListaLivros() {
                 ) : (
                     <>
                         {/* Desktop Table */}
-                        <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200/50">
+                        <div className="hidden md:block overflow-x-auto rounded-xl border border-border">
                             <table className="table-modern">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
                                         <th>Título</th>
-                                        <th>Categoria</th>
                                         <th>Autor</th>
+                                        <th>Ano</th>
                                         <th className="text-center">Ações</th>
                                     </tr>
                                 </thead>
@@ -201,19 +195,24 @@ export default function ListaLivros() {
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: index * 0.03 }}
                                         >
-                                            <td className="font-mono text-gray-500">
+                                            <td className="font-mono text-muted-foreground">
                                                 #{livro.id}
                                             </td>
-                                            <td className="font-medium text-gray-800">
-                                                {livro.titulo}
-                                            </td>
                                             <td>
-                                                <span className="badge badge-info">
-                                                    {livro.categoria}
-                                                </span>
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+                                                        <BookOpen size={16} />
+                                                    </div>
+                                                    <span className="font-medium text-foreground">
+                                                        {livro.titulo}
+                                                    </span>
+                                                </div>
                                             </td>
-                                            <td className="text-gray-600">
+                                            <td className="text-muted-foreground">
                                                 {livro.autor}
+                                            </td>
+                                            <td className="text-muted-foreground font-mono">
+                                                {livro.anoPublicacao}
                                             </td>
                                             <td>
                                                 <div className="flex items-center justify-center space-x-2">
@@ -222,7 +221,7 @@ export default function ListaLivros() {
                                                         className="action-btn action-btn-edit"
                                                         title="Editar"
                                                     >
-                                                        <FiEdit2 size={18} />
+                                                        <Pencil size={18} />
                                                     </Link>
                                                     <button
                                                         onClick={() => {
@@ -232,7 +231,7 @@ export default function ListaLivros() {
                                                         className="action-btn action-btn-delete cursor-pointer"
                                                         title="Excluir"
                                                     >
-                                                        <FiTrash2 size={18} />
+                                                        <Trash2 size={18} />
                                                     </button>
                                                 </div>
                                             </td>
@@ -250,24 +249,24 @@ export default function ListaLivros() {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.03 }}
-                                    className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+                                    className="bg-card rounded-xl border border-border p-4 shadow-sm"
                                 >
                                     <div className="flex items-start justify-between mb-3">
                                         <div className="flex-1">
-                                            <p className="font-medium text-gray-800 text-base">
+                                            <p className="font-medium text-foreground text-base">
                                                 {livro.titulo}
                                             </p>
-                                            <p className="text-gray-500 text-sm mt-0.5">
+                                            <p className="text-muted-foreground text-sm mt-1">
                                                 {livro.autor}
                                             </p>
                                         </div>
-                                        <span className="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                                        <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
                                             #{livro.id}
                                         </span>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="badge badge-info text-xs">
-                                            {livro.categoria}
+                                    <div className="flex items-center justify-between border-t border-border pt-3">
+                                        <span className="text-sm text-muted-foreground">
+                                            Ano: <span className="font-mono text-foreground">{livro.anoPublicacao}</span>
                                         </span>
                                         <div className="flex items-center space-x-2">
                                             <Link
@@ -275,7 +274,7 @@ export default function ListaLivros() {
                                                 className="action-btn action-btn-edit"
                                                 title="Editar"
                                             >
-                                                <FiEdit2 size={16} />
+                                                <Pencil size={16} />
                                             </Link>
                                             <button
                                                 onClick={() => {
@@ -285,7 +284,7 @@ export default function ListaLivros() {
                                                 className="action-btn action-btn-delete cursor-pointer"
                                                 title="Excluir"
                                             >
-                                                <FiTrash2 size={16} />
+                                                <Trash2 size={16} />
                                             </button>
                                         </div>
                                     </div>
@@ -300,7 +299,7 @@ export default function ListaLivros() {
                                 disabled={page === 0}
                                 className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
-                                <FiChevronLeft />
+                                <ChevronLeft size={16} />
                                 <span className="hidden sm:inline">Anterior</span>
                             </button>
                             <div className="pagination-info">
@@ -312,7 +311,7 @@ export default function ListaLivros() {
                                 className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
                                 <span className="hidden sm:inline">Próxima</span>
-                                <FiChevronRight />
+                                <ChevronRight size={16} />
                             </button>
                         </div>
                     </>
@@ -333,13 +332,13 @@ export default function ListaLivros() {
                                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                                 className="modal-content"
                             >
-                                <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <FiTrash2 className="text-red-500 text-2xl" />
+                                <div className="w-14 h-14 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Trash2 className="text-destructive" size={24} />
                                 </div>
                                 <h2 className="text-xl font-bold text-center mb-2">
                                     Confirmar Exclusão
                                 </h2>
-                                <p className="text-gray-500 text-center mb-6">
+                                <p className="text-muted-foreground text-center mb-6">
                                     Tem certeza que deseja excluir este livro? Esta ação não pode ser desfeita.
                                 </p>
                                 <div className="flex space-x-3">

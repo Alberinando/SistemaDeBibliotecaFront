@@ -3,15 +3,14 @@ import React, { useState, FormEvent, useEffect, useCallback, useRef } from "reac
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 import api from '@/services/api';
-import { FaBook, FaUser, FaLock, FaArrowRight, FaArrowLeft } from "react-icons/fa";
-import { FiUser, FiBriefcase, FiLogIn, FiLock, FiCheckCircle } from 'react-icons/fi';
+import { BookOpen, User, Lock, ArrowRight, ArrowLeft, Briefcase, LogIn, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Externalized Loading Component
 const LoadingState = () => (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-background">
         <div role="status">
-            <svg aria-hidden="true" className="w-8 h-8 text-gray-200 animate-spin fill-indigo-600"
+            <svg aria-hidden="true" className="w-8 h-8 text-border animate-spin fill-primary"
                 viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                     d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
@@ -41,7 +40,7 @@ export default function LoginPage() {
     const [regLogin, setRegLogin] = useState<string>("");
     const [regSenha, setRegSenha] = useState<string>("");
 
-    // Refs (mostly for preventing auto-focus issues or keyboard nav if needed)
+    // Refs
     const loginRef = useRef<HTMLInputElement>(null);
 
     const router = useRouter();
@@ -95,11 +94,9 @@ export default function LoginPage() {
             });
 
             setSuccessMsg("Cadastro realizado com sucesso! Faça login abaixo.");
-            setIsRegistering(false); // Switch back to login view
-            // Optional: Prefill login
+            setIsRegistering(false);
             setLogin(regLogin);
             setSenha("");
-            // Clear registration form
             setRegNome("");
             setRegCargo("");
             setRegLogin("");
@@ -128,18 +125,10 @@ export default function LoginPage() {
 
     return (
         <div className="h-screen w-screen flex overflow-hidden">
-            {/* Left Side - Branding */}
+            {/* Left Side - Branding (solid dark bg, no gradient) */}
             <div
-                className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative overflow-hidden"
-                style={{
-                    background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)",
-                }}
+                className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative overflow-hidden bg-sidebar"
             >
-                {/* Decorative circles */}
-                <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl" />
-                <div className="absolute bottom-20 right-20 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl" />
-
                 <motion.div
                     key={isRegistering ? "register-brand" : "login-brand"}
                     initial={{ opacity: 0, y: 20 }}
@@ -147,15 +136,15 @@ export default function LoginPage() {
                     transition={{ duration: 0.6 }}
                     className="relative z-10 text-center max-w-lg"
                 >
-                    {/* Logo */}
-                    <div className="w-24 h-24 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-purple-500/40">
-                        <FaBook className="text-white text-4xl" />
+                    {/* Logo — solid bg, no gradient */}
+                    <div className="w-24 h-24 bg-primary rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl">
+                        <BookOpen className="text-primary-foreground" size={40} />
                     </div>
 
                     <h1 className="text-4xl font-bold text-white mb-4">
                         {isRegistering ? "Junte-se a Nós" : "Sistema de Biblioteca"}
                     </h1>
-                    <p className="text-indigo-200 text-lg leading-relaxed">
+                    <p className="text-sidebar-foreground/70 text-lg leading-relaxed">
                         {isRegistering
                             ? "Crie sua conta no Sistema de Biblioteca e comece a gerenciar seu acervo hoje mesmo."
                             : "Gerencie seu acervo de forma inteligente. Controle empréstimos, membros e funcionários em uma única plataforma."}
@@ -163,15 +152,15 @@ export default function LoginPage() {
                 </motion.div>
             </div>
 
-            {/* Right Side - Forms */}
-            <div className="flex-1 flex items-center justify-center p-8 bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20 h-full overflow-y-auto">
+            {/* Right Side - Forms (solid bg, no gradient) */}
+            <div className="flex-1 flex items-center justify-center p-8 bg-background h-full overflow-y-auto">
                 <div className="w-full max-w-md">
                     {/* Mobile Logo */}
                     <div className="lg:hidden flex flex-col items-center mb-8">
-                        <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30 mb-4">
-                            <FaBook className="text-white text-2xl" />
+                        <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-md mb-4">
+                            <BookOpen className="text-primary-foreground" size={28} />
                         </div>
-                        <h1 className="text-2xl font-bold text-gray-800">Biblioteca</h1>
+                        <h1 className="text-2xl font-bold text-foreground">Biblioteca</h1>
                     </div>
 
                     <AnimatePresence mode="wait">
@@ -183,20 +172,20 @@ export default function LoginPage() {
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
                                 transition={{ duration: 0.3 }}
-                                className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl shadow-indigo-500/10 border border-white/50 p-8"
+                                className="bg-card rounded-2xl shadow-card border border-border p-8"
                             >
                                 <div className="text-center mb-6">
-                                    <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                                    <h2 className="text-2xl font-bold text-foreground mb-2">
                                         Criar Nova Conta
                                     </h2>
-                                    <p className="text-gray-500">
+                                    <p className="text-muted-foreground">
                                         Preencha os dados abaixo
                                     </p>
                                 </div>
                                 <form onSubmit={handleRegister} className="space-y-4">
                                     {/* Error Message */}
                                     {error && (
-                                        <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-3 text-sm text-red-600">
+                                        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-xl flex items-start space-x-3 text-sm text-destructive">
                                             <span>!</span><span>{error}</span>
                                         </div>
                                     )}
@@ -204,12 +193,12 @@ export default function LoginPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {/* Nome */}
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                            <label className="block text-sm font-semibold text-foreground mb-1">
                                                 Nome
                                             </label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                    <FiUser className="text-gray-400" />
+                                                    <User className="text-muted-foreground" size={16} />
                                                 </div>
                                                 <input
                                                     type="text"
@@ -217,18 +206,18 @@ export default function LoginPage() {
                                                     onChange={e => setRegNome(e.target.value)}
                                                     required
                                                     placeholder="Seu nome"
-                                                    className="w-full pl-10 pr-3 py-2.5 bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-gray-800 placeholder-gray-400"
+                                                    className="w-full pl-10 pr-3 py-2.5 bg-muted/50 border border-input rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:bg-card transition-all text-foreground placeholder-muted-foreground"
                                                 />
                                             </div>
                                         </div>
                                         {/* Cargo */}
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                            <label className="block text-sm font-semibold text-foreground mb-1">
                                                 Cargo
                                             </label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                    <FiBriefcase className="text-gray-400" />
+                                                    <Briefcase className="text-muted-foreground" size={16} />
                                                 </div>
                                                 <input
                                                     type="text"
@@ -236,7 +225,7 @@ export default function LoginPage() {
                                                     onChange={e => setRegCargo(e.target.value)}
                                                     required
                                                     placeholder="Seu cargo"
-                                                    className="w-full pl-10 pr-3 py-2.5 bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-gray-800 placeholder-gray-400"
+                                                    className="w-full pl-10 pr-3 py-2.5 bg-muted/50 border border-input rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:bg-card transition-all text-foreground placeholder-muted-foreground"
                                                 />
                                             </div>
                                         </div>
@@ -244,12 +233,12 @@ export default function LoginPage() {
 
                                     {/* Login */}
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                        <label className="block text-sm font-semibold text-foreground mb-1">
                                             Login Desejado
                                         </label>
                                         <div className="relative">
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <FiLogIn className="text-gray-400" />
+                                                <LogIn className="text-muted-foreground" size={16} />
                                             </div>
                                             <input
                                                 type="text"
@@ -257,19 +246,19 @@ export default function LoginPage() {
                                                 onChange={e => setRegLogin(e.target.value)}
                                                 required
                                                 placeholder="Nome de usuário"
-                                                className="w-full pl-10 pr-3 py-2.5 bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-gray-800 placeholder-gray-400"
+                                                className="w-full pl-10 pr-3 py-2.5 bg-muted/50 border border-input rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:bg-card transition-all text-foreground placeholder-muted-foreground"
                                             />
                                         </div>
                                     </div>
 
                                     {/* Senha */}
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                        <label className="block text-sm font-semibold text-foreground mb-1">
                                             Senha
                                         </label>
                                         <div className="relative">
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <FiLock className="text-gray-400" />
+                                                <Lock className="text-muted-foreground" size={16} />
                                             </div>
                                             <input
                                                 type="password"
@@ -277,7 +266,7 @@ export default function LoginPage() {
                                                 onChange={e => setRegSenha(e.target.value)}
                                                 required
                                                 placeholder="Crie uma senha forte"
-                                                className="w-full pl-10 pr-3 py-2.5 bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-gray-800 placeholder-gray-400"
+                                                className="w-full pl-10 pr-3 py-2.5 bg-muted/50 border border-input rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:bg-card transition-all text-foreground placeholder-muted-foreground"
                                             />
                                         </div>
                                     </div>
@@ -285,17 +274,15 @@ export default function LoginPage() {
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="w-full flex items-center justify-center space-x-2 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                                        className="w-full flex items-center justify-center space-x-2 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
                                     >
                                         {loading ? (
                                             <>
-                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                                                 <span>Salvando...</span>
                                             </>
                                         ) : (
-                                            <>
-                                                <span>Criar Conta</span>
-                                            </>
+                                            <span>Criar Conta</span>
                                         )}
                                     </button>
 
@@ -306,9 +293,9 @@ export default function LoginPage() {
                                                 setIsRegistering(false);
                                                 setError("");
                                             }}
-                                            className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors flex items-center justify-center space-x-1 mx-auto cursor-pointer"
+                                            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center justify-center space-x-1 mx-auto cursor-pointer"
                                         >
-                                            <FaArrowLeft />
+                                            <ArrowLeft size={14} />
                                             <span>Voltar para Login</span>
                                         </button>
                                     </div>
@@ -322,13 +309,13 @@ export default function LoginPage() {
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: 20 }}
                                 transition={{ duration: 0.3 }}
-                                className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl shadow-indigo-500/10 border border-white/50 p-8"
+                                className="bg-card rounded-2xl shadow-card border border-border p-8"
                             >
                                 <div className="text-center mb-8">
-                                    <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                                    <h2 className="text-2xl font-bold text-foreground mb-2">
                                         Bem-vindo de volta!
                                     </h2>
-                                    <p className="text-gray-500">
+                                    <p className="text-muted-foreground">
                                         Entre com suas credenciais para continuar
                                     </p>
                                 </div>
@@ -338,12 +325,12 @@ export default function LoginPage() {
                                     <motion.div
                                         initial={{ opacity: 0, y: -10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-start space-x-3"
+                                        className="mb-6 p-4 bg-success/10 border border-success/20 rounded-xl flex items-start space-x-3"
                                     >
-                                        <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <FiCheckCircle className="text-white text-xs" />
+                                        <div className="w-5 h-5 bg-success rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            <CheckCircle className="text-white" size={12} />
                                         </div>
-                                        <p className="text-green-600 text-sm">{successMsg}</p>
+                                        <p className="text-success text-sm">{successMsg}</p>
                                     </motion.div>
                                 )}
 
@@ -352,24 +339,24 @@ export default function LoginPage() {
                                     <motion.div
                                         initial={{ opacity: 0, y: -10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-3"
+                                        className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-xl flex items-start space-x-3"
                                     >
-                                        <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <div className="w-5 h-5 bg-destructive rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                                             <span className="text-white text-xs">!</span>
                                         </div>
-                                        <p className="text-red-600 text-sm">{error}</p>
+                                        <p className="text-destructive text-sm">{error}</p>
                                     </motion.div>
                                 )}
 
                                 <form onSubmit={handleLogin} className="space-y-5">
                                     {/* Login Field */}
                                     <div>
-                                        <label htmlFor="login" className="block text-sm font-semibold text-gray-700 mb-2">
+                                        <label htmlFor="login" className="block text-sm font-semibold text-foreground mb-2">
                                             Login
                                         </label>
                                         <div className="relative">
                                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                <FaUser className="text-gray-400" />
+                                                <User className="text-muted-foreground" size={16} />
                                             </div>
                                             <input
                                                 ref={loginRef}
@@ -381,19 +368,19 @@ export default function LoginPage() {
                                                 onChange={(e) => setLogin(e.target.value)}
                                                 required
                                                 placeholder="Digite seu login"
-                                                className="w-full pl-11 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all duration-200 text-gray-800 placeholder-gray-400"
+                                                className="w-full pl-11 pr-4 py-3 bg-muted/50 border border-input rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:bg-card transition-all duration-200 text-foreground placeholder-muted-foreground"
                                             />
                                         </div>
                                     </div>
 
                                     {/* Password Field */}
                                     <div>
-                                        <label htmlFor="senha" className="block text-sm font-semibold text-gray-700 mb-2">
+                                        <label htmlFor="senha" className="block text-sm font-semibold text-foreground mb-2">
                                             Senha
                                         </label>
                                         <div className="relative">
                                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                <FaLock className="text-gray-400" />
+                                                <Lock className="text-muted-foreground" size={16} />
                                             </div>
                                             <input
                                                 type="password"
@@ -404,7 +391,7 @@ export default function LoginPage() {
                                                 onChange={(e) => setSenha(e.target.value)}
                                                 required
                                                 placeholder="Digite sua senha"
-                                                className="w-full pl-11 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all duration-200 text-gray-800 placeholder-gray-400"
+                                                className="w-full pl-11 pr-4 py-3 bg-muted/50 border border-input rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:bg-card transition-all duration-200 text-foreground placeholder-muted-foreground"
                                             />
                                         </div>
                                     </div>
@@ -412,8 +399,8 @@ export default function LoginPage() {
                                     {/* Options: Remember Me */}
                                     <div className="flex items-center justify-between">
                                         <label className="flex items-center space-x-2 cursor-pointer">
-                                            <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                                            <span className="text-sm text-gray-600">Lembrar de mim</span>
+                                            <input type="checkbox" className="w-4 h-4 rounded border-input text-primary focus:ring-primary" />
+                                            <span className="text-sm text-muted-foreground">Lembrar de mim</span>
                                         </label>
                                     </div>
 
@@ -421,23 +408,23 @@ export default function LoginPage() {
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="w-full flex items-center justify-center space-x-2 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                                        className="w-full flex items-center justify-center space-x-2 py-3.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
                                     >
                                         {loading ? (
                                             <>
-                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                                                 <span>Entrando...</span>
                                             </>
                                         ) : (
                                             <>
                                                 <span>Entrar</span>
-                                                <FaArrowRight className="text-sm" />
+                                                <ArrowRight size={16} />
                                             </>
                                         )}
                                     </button>
 
                                     {/* Sign Up Link */}
-                                    <p className="text-center text-sm text-gray-600">
+                                    <p className="text-center text-sm text-muted-foreground">
                                         <button
                                             type="button"
                                             onClick={() => {
@@ -445,7 +432,7 @@ export default function LoginPage() {
                                                 setError("");
                                                 setSuccessMsg("");
                                             }}
-                                            className="font-semibold text-indigo-600 hover:text-indigo-500 hover:underline cursor-pointer"
+                                            className="font-semibold text-primary hover:text-primary/80 hover:underline cursor-pointer"
                                         >
                                             Cadastre-se aqui
                                         </button>
@@ -456,7 +443,7 @@ export default function LoginPage() {
                     </AnimatePresence>
 
                     {/* Footer */}
-                    <p className="text-center text-gray-400 text-sm mt-8">
+                    <p className="text-center text-muted-foreground text-sm mt-8">
                         Sistema de Gerenciamento de Biblioteca
                     </p>
                 </div>

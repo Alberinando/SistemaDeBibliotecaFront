@@ -6,7 +6,7 @@ import Link from 'next/link';
 import formatIsbn from "@/util/FormarIsbn";
 import { useAuth } from "@/resources/users/authentication.resourse";
 import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
-import { FiBook, FiUser, FiTag, FiHash, FiCheck, FiArrowLeft, FiSave } from 'react-icons/fi';
+import { BookOpen, User, Tag, Hash, Check, ArrowLeft, Save } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // Externalized Static Component
@@ -115,7 +115,7 @@ export default function EditarLivro() {
                             href="/livros"
                             className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
                         >
-                            <FiArrowLeft size={16} />
+                            <ArrowLeft size={16} />
                         </Link>
                         <div>
                             <h1 className="page-title text-lg">Editar Livro</h1>
@@ -146,7 +146,7 @@ export default function EditarLivro() {
                             {/* Título */}
                             <div className="form-group">
                                 <label className="form-label text-xs flex items-center space-x-1.5">
-                                    <FiBook className="text-indigo-500" size={14} />
+                                    <BookOpen className="text-indigo-500" size={14} />
                                     <span>Título</span>
                                 </label>
                                 <input
@@ -164,7 +164,7 @@ export default function EditarLivro() {
                                 {/* Autor */}
                                 <div className="form-group">
                                     <label className="form-label text-xs flex items-center space-x-1.5">
-                                        <FiUser className="text-indigo-500" size={14} />
+                                        <User className="text-indigo-500" size={14} />
                                         <span>Autor</span>
                                     </label>
                                     <input
@@ -180,7 +180,7 @@ export default function EditarLivro() {
                                 {/* Categoria */}
                                 <div className="form-group">
                                     <label className="form-label text-xs flex items-center space-x-1.5">
-                                        <FiTag className="text-indigo-500" size={14} />
+                                        <Tag className="text-indigo-500" size={14} />
                                         <span>Categoria</span>
                                     </label>
                                     <input
@@ -199,7 +199,7 @@ export default function EditarLivro() {
                                 {/* Quantidade */}
                                 <div className="form-group">
                                     <label className="form-label text-xs flex items-center space-x-1.5">
-                                        <FiHash className="text-indigo-500" size={14} />
+                                        <Hash className="text-indigo-500" size={14} />
                                         <span>Quantidade</span>
                                     </label>
                                     <input
@@ -218,7 +218,7 @@ export default function EditarLivro() {
                                 {/* ISBN */}
                                 <div className="form-group">
                                     <label className="form-label text-xs flex items-center space-x-1.5">
-                                        <FiHash className="text-indigo-500" size={14} />
+                                        <Hash className="text-indigo-500" size={14} />
                                         <span>ISBN</span>
                                     </label>
                                     <input
@@ -238,7 +238,7 @@ export default function EditarLivro() {
                                     <div className="flex items-center space-x-2">
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${disponibilidade ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-500'
                                             }`}>
-                                            <FiCheck size={16} />
+                                            <Check size={16} />
                                         </div>
                                         <div>
                                             <p className="font-medium text-gray-800 text-sm">Disponível</p>
@@ -264,7 +264,7 @@ export default function EditarLivro() {
                                     href="/livros"
                                     className="btn-ghost text-sm flex items-center space-x-1.5 px-3 py-1.5"
                                 >
-                                    <FiArrowLeft size={14} />
+                                    <ArrowLeft size={14} />
                                     <span>Voltar</span>
                                 </Link>
                                 <button
@@ -282,7 +282,7 @@ export default function EditarLivro() {
                                         </>
                                     ) : (
                                         <>
-                                            <FiSave size={14} />
+                                            <Save size={14} />
                                             <span>Atualizar</span>
                                         </>
                                     )}

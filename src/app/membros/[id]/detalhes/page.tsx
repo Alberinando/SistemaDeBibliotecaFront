@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import api from '@/services/api';
 import Link from 'next/link';
 import AuthenticatedPage from '@/components/Authenticated/AuthenticatedPage';
-import { FiArrowLeft, FiBook, FiPhone, FiMail, FiCreditCard, FiEdit2, FiClock, FiAlertCircle } from 'react-icons/fi';
+import { ArrowLeft, BookOpen, Phone, Mail, CreditCard, Pencil, Clock, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import EmprestimoResponseDTO from '@/interface/EmprestimoResponseDTO';
 import { Membro } from '@/interface/MembrosProps';
@@ -97,7 +97,7 @@ export default function DetalhesMembro() {
                             href="/membros"
                             className="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
                         >
-                            <FiArrowLeft size={18} />
+                            <ArrowLeft size={18} />
                         </Link>
                         <h1 className="text-lg font-semibold text-gray-800">Detalhes do Membro</h1>
                     </div>
@@ -106,7 +106,7 @@ export default function DetalhesMembro() {
                             href={`/membros/${id}/editar`}
                             className="flex items-center space-x-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700"
                         >
-                            <FiEdit2 size={14} />
+                            <Pencil size={14} />
                             <span>Editar</span>
                         </Link>
                     )}
@@ -117,7 +117,7 @@ export default function DetalhesMembro() {
                     <LoadingSkeleton />
                 ) : error ? (
                     <div className="text-center py-8 bg-red-50 rounded-xl border border-red-100">
-                        <FiAlertCircle className="mx-auto h-10 w-10 text-red-400 mb-3" />
+                        <AlertCircle className="mx-auto h-10 w-10 text-red-400 mb-3" />
                         <p className="text-red-600">{error}</p>
                     </div>
                 ) : membro && (
@@ -142,7 +142,7 @@ export default function DetalhesMembro() {
                         <div className="grid grid-cols-2 gap-3">
                             <div className="bg-white rounded-xl border border-gray-200 p-3.5 flex items-center space-x-3">
                                 <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 flex-shrink-0">
-                                    <FiMail size={16} />
+                                    <Mail size={16} />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-[10px] text-gray-400 uppercase tracking-wide">E-mail</p>
@@ -152,7 +152,7 @@ export default function DetalhesMembro() {
 
                             <div className="bg-white rounded-xl border border-gray-200 p-3.5 flex items-center space-x-3">
                                 <div className="w-9 h-9 bg-green-50 rounded-lg flex items-center justify-center text-green-600 flex-shrink-0">
-                                    <FiPhone size={16} />
+                                    <Phone size={16} />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-[10px] text-gray-400 uppercase tracking-wide">Telefone</p>
@@ -162,7 +162,7 @@ export default function DetalhesMembro() {
 
                             <div className="bg-white rounded-xl border border-gray-200 p-3.5 flex items-center space-x-3">
                                 <div className="w-9 h-9 bg-purple-50 rounded-lg flex items-center justify-center text-purple-600 flex-shrink-0">
-                                    <FiCreditCard size={16} />
+                                    <CreditCard size={16} />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-[10px] text-gray-400 uppercase tracking-wide">CPF</p>
@@ -172,7 +172,7 @@ export default function DetalhesMembro() {
 
                             <div className="bg-white rounded-xl border border-gray-200 p-3.5 flex items-center space-x-3">
                                 <div className="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600 flex-shrink-0">
-                                    <FiBook size={16} />
+                                    <BookOpen size={16} />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-[10px] text-gray-400 uppercase tracking-wide">Empréstimos</p>
@@ -187,7 +187,7 @@ export default function DetalhesMembro() {
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                             <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                                 <div className="flex items-center space-x-2">
-                                    <FiClock size={14} className="text-indigo-600" />
+                                    <Clock size={14} className="text-indigo-600" />
                                     <h3 className="font-semibold text-gray-800 text-sm">Empréstimos Recentes</h3>
                                 </div>
                                 {totalEmprestimos > 3 && (
@@ -202,7 +202,7 @@ export default function DetalhesMembro() {
 
                             {emprestimos.length === 0 ? (
                                 <div className="py-6 text-center text-gray-500">
-                                    <FiBook className="mx-auto h-8 w-8 text-gray-300 mb-2" />
+                                    <BookOpen className="mx-auto h-8 w-8 text-gray-300 mb-2" />
                                     <p className="text-sm">Nenhum empréstimo</p>
                                 </div>
                             ) : (
@@ -212,7 +212,7 @@ export default function DetalhesMembro() {
                                         return (
                                             <div key={emp.id} className="px-4 py-2.5 flex items-center justify-between">
                                                 <div className="flex items-center space-x-3 min-w-0 flex-1">
-                                                    <FiBook size={14} className="text-indigo-500 flex-shrink-0" />
+                                                    <BookOpen size={14} className="text-indigo-500 flex-shrink-0" />
                                                     <div className="min-w-0 flex-1">
                                                         <p className="font-medium text-gray-800 text-sm truncate">{emp.livros.titulo}</p>
                                                         <p className="text-xs text-gray-400">

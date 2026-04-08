@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import api from "@/services/api";
 import { Historico, HistoricoPage } from "@/interface/HistoricoPros";
-import { FiClock, FiChevronLeft, FiChevronRight, FiAlertTriangle } from 'react-icons/fi';
+import { Clock, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // Externalized Static Components
@@ -26,7 +26,7 @@ const EmptyState = () => (
         className="empty-state"
     >
         <div className="empty-state-icon">
-            <FiClock size={36} />
+            <Clock size={36} />
         </div>
         <h3 className="text-xl font-semibold text-gray-800 mb-2">
             Nenhum registro no histórico
@@ -96,7 +96,7 @@ export default function ListaHistorico() {
                 ) : error ? (
                     <div className="text-center py-8">
                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <FiAlertTriangle className="text-red-500 text-2xl" />
+                            <AlertTriangle className="text-red-500 text-2xl" />
                         </div>
                         <p className="text-red-500 font-medium">{error}</p>
                         <button
@@ -147,7 +147,7 @@ export default function ListaHistorico() {
                                             </td>
                                             <td>
                                                 <div className="flex items-center space-x-2 text-gray-600">
-                                                    <FiClock className="text-gray-400" size={14} />
+                                                    <Clock className="text-gray-400" size={14} />
                                                     <span>
                                                         {new Date(h.dataAcao).toLocaleString("pt-BR", {
                                                             day: "2-digit",
@@ -194,7 +194,7 @@ export default function ListaHistorico() {
                                         </span>
                                     </div>
                                     <div className="flex items-center space-x-2 text-sm text-gray-500 border-t border-gray-100 pt-3">
-                                        <FiClock className="text-gray-400" size={14} />
+                                        <Clock className="text-gray-400" size={14} />
                                         <span>
                                             {new Date(h.dataAcao).toLocaleString("pt-BR", {
                                                 day: "2-digit",
@@ -216,7 +216,7 @@ export default function ListaHistorico() {
                                 disabled={page === 0}
                                 className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
-                                <FiChevronLeft />
+                                <ChevronLeft />
                                 <span className="hidden sm:inline">Anterior</span>
                             </button>
                             <div className="pagination-info">
@@ -228,7 +228,7 @@ export default function ListaHistorico() {
                                 className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
                                 <span className="hidden sm:inline">Próxima</span>
-                                <FiChevronRight />
+                                <ChevronRight />
                             </button>
                         </div>
                     </>

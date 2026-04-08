@@ -5,7 +5,7 @@ import api from "@/services/api";
 import Link from "next/link";
 
 import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
-import { FiUser, FiBriefcase, FiLogIn, FiArrowLeft, FiSave, FiLock, FiShield } from 'react-icons/fi';
+import { User, Briefcase, LogIn, ArrowLeft, Save, Lock, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Externalized Static Component
@@ -141,7 +141,7 @@ export default function EditarFuncionario() {
                             href="/funcionarios"
                             className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
                         >
-                            <FiArrowLeft size={20} />
+                            <ArrowLeft size={20} />
                         </Link>
                         <div>
                             <h1 className="page-title">Editar Funcionário</h1>
@@ -160,7 +160,7 @@ export default function EditarFuncionario() {
                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                                 }`}
                         >
-                            <FiUser size={16} />
+                            <User size={16} />
                             <span>Dados Gerais</span>
                         </button>
                         <button
@@ -170,7 +170,7 @@ export default function EditarFuncionario() {
                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                                 }`}
                         >
-                            <FiShield size={16} />
+                            <Shield size={16} />
                             <span>Segurança</span>
                         </button>
                     </div>
@@ -198,7 +198,7 @@ export default function EditarFuncionario() {
                                 className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-start space-x-3"
                             >
                                 <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                    <FiLock className="text-white w-3 h-3" />
+                                    <Lock className="text-white w-3 h-3" />
                                 </div>
                                 <p className="text-green-600 text-sm">{successMsg}</p>
                             </motion.div>
@@ -219,7 +219,7 @@ export default function EditarFuncionario() {
                                 >
                                     <div className="form-group">
                                         <label className="form-label flex items-center space-x-2">
-                                            <FiUser className="text-indigo-500" />
+                                            <User className="text-indigo-500" />
                                             <span>Nome Completo</span>
                                         </label>
                                         <input
@@ -233,7 +233,7 @@ export default function EditarFuncionario() {
 
                                     <div className="form-group">
                                         <label className="form-label flex items-center space-x-2">
-                                            <FiBriefcase className="text-indigo-500" />
+                                            <Briefcase className="text-indigo-500" />
                                             <span>Cargo</span>
                                         </label>
                                         <input
@@ -247,7 +247,7 @@ export default function EditarFuncionario() {
 
                                     <div className="form-group">
                                         <label className="form-label flex items-center space-x-2">
-                                            <FiLogIn className="text-indigo-500" />
+                                            <LogIn className="text-indigo-500" />
                                             <span>Login</span>
                                         </label>
                                         <input
@@ -269,7 +269,7 @@ export default function EditarFuncionario() {
                                                 <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
                                             ) : (
                                                 <>
-                                                    <FiSave />
+                                                    <Save />
                                                     <span>Salvar Dados</span>
                                                 </>
                                             )}
@@ -288,7 +288,7 @@ export default function EditarFuncionario() {
                                 >
                                     <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4 mb-6">
                                         <div className="flex items-start space-x-3">
-                                            <FiLock className="text-yellow-600 mt-1" />
+                                            <Lock className="text-yellow-600 mt-1" />
                                             <div>
                                                 <h4 className="text-sm font-semibold text-yellow-800">Alteração de Senha</h4>
                                                 <p className="text-xs text-yellow-700 mt-1">
@@ -346,7 +346,7 @@ export default function EditarFuncionario() {
                                                 <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
                                             ) : (
                                                 <>
-                                                    <FiShield />
+                                                    <Shield />
                                                     <span>Atualizar Senha</span>
                                                 </>
                                             )}

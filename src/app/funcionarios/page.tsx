@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '@/services/api';
-import { FiEdit2, FiTrash2, FiPlus, FiUserCheck, FiChevronLeft, FiChevronRight, FiAlertTriangle } from 'react-icons/fi';
+import { Pencil, Trash2, Plus, UserCog, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import FuncionarioPage, { Funcionario } from "@/interface/FuncionarioProps";
@@ -29,19 +29,19 @@ const EmptyState = () => (
         className="empty-state"
     >
         <div className="empty-state-icon">
-            <FiUserCheck size={36} />
+            <UserCog size={36} />
         </div>
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+        <h3 className="text-xl font-semibold text-foreground mb-2">
             Nenhum funcionário cadastrado
         </h3>
-        <p className="text-gray-500 mb-6">
+        <p className="text-muted-foreground mb-6">
             Comece adicionando o primeiro funcionário
         </p>
         <Link
             href="/funcionarios/cadastrar"
             className="btn-success inline-flex items-center space-x-2"
         >
-            <FiPlus />
+            <Plus size={16} />
             <span>Cadastrar Primeiro Funcionário</span>
         </Link>
     </motion.div>
@@ -129,9 +129,6 @@ export default function ListaFuncionarios() {
         }
     }, [toDeleteId, fetchFuncionarios]);
 
-    // Loading Skeleton externalized
-    // Empty State externalized
-
     return (
         <>
             <motion.div
@@ -144,16 +141,16 @@ export default function ListaFuncionarios() {
                     <div>
                         <h1 className="page-title">Lista de Funcionários</h1>
                         {!loading && !error && funcionarios.length > 0 && (
-                            <p className="text-gray-500 text-sm mt-1">
+                            <p className="text-muted-foreground text-sm mt-1">
                                 {totalElements} funcionário{totalElements !== 1 ? 's' : ''} cadastrado{totalElements !== 1 ? 's' : ''}
                             </p>
                         )}
                     </div>
                     <Link
                         href="/funcionarios/cadastrar"
-                        className="btn-gradient flex items-center space-x-2"
+                        className="btn-primary flex items-center space-x-2"
                     >
-                        <FiPlus />
+                        <Plus size={16} />
                         <span>Cadastrar Funcionário</span>
                     </Link>
                 </div>
@@ -163,10 +160,10 @@ export default function ListaFuncionarios() {
                     <LoadingSkeleton />
                 ) : error ? (
                     <div className="text-center py-8">
-                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <FiAlertTriangle className="text-red-500 text-2xl" />
+                        <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <AlertTriangle className="text-destructive" size={24} />
                         </div>
-                        <p className="text-red-500 font-medium">{error}</p>
+                        <p className="text-destructive font-medium">{error}</p>
                         <button
                             onClick={() => fetchFuncionarios()}
                             className="mt-4 btn-ghost"
@@ -179,7 +176,7 @@ export default function ListaFuncionarios() {
                 ) : (
                     <>
                         {/* Desktop Table */}
-                        <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200/50">
+                        <div className="hidden md:block overflow-x-auto rounded-xl border border-border">
                             <table className="table-modern">
                                 <thead>
                                     <tr>
@@ -198,15 +195,15 @@ export default function ListaFuncionarios() {
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: index * 0.03 }}
                                         >
-                                            <td className="font-mono text-gray-500">
+                                            <td className="font-mono text-muted-foreground">
                                                 #{funcionario.id}
                                             </td>
                                             <td>
                                                 <div className="flex items-center space-x-3">
-                                                    <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                                    <div className="w-8 h-8 bg-amber-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
                                                         {funcionario.nome.charAt(0).toUpperCase()}
                                                     </div>
-                                                    <span className="font-medium text-gray-800">
+                                                    <span className="font-medium text-foreground">
                                                         {funcionario.nome}
                                                     </span>
                                                 </div>
@@ -216,7 +213,7 @@ export default function ListaFuncionarios() {
                                                     {funcionario.cargo}
                                                 </span>
                                             </td>
-                                            <td className="text-gray-600 font-mono text-sm">
+                                            <td className="text-muted-foreground font-mono text-sm">
                                                 {funcionario.login}
                                             </td>
                                             <td>
@@ -226,7 +223,7 @@ export default function ListaFuncionarios() {
                                                         className="action-btn action-btn-edit"
                                                         title="Editar"
                                                     >
-                                                        <FiEdit2 size={18} />
+                                                        <Pencil size={18} />
                                                     </Link>
                                                     <button
                                                         onClick={() => {
@@ -236,7 +233,7 @@ export default function ListaFuncionarios() {
                                                         className="action-btn action-btn-delete cursor-pointer"
                                                         title="Excluir"
                                                     >
-                                                        <FiTrash2 size={18} />
+                                                        <Trash2 size={18} />
                                                     </button>
                                                 </div>
                                             </td>
@@ -254,15 +251,15 @@ export default function ListaFuncionarios() {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.03 }}
-                                    className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+                                    className="bg-card rounded-xl border border-border p-4 shadow-sm"
                                 >
                                     <div className="flex items-start justify-between mb-3">
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white font-medium">
+                                            <div className="w-10 h-10 bg-amber-600 rounded-full flex items-center justify-center text-white font-medium">
                                                 {funcionario.nome.charAt(0).toUpperCase()}
                                             </div>
                                             <div>
-                                                <p className="font-medium text-gray-800">
+                                                <p className="font-medium text-foreground">
                                                     {funcionario.nome}
                                                 </p>
                                                 <span className="badge badge-info text-xs">
@@ -270,14 +267,14 @@ export default function ListaFuncionarios() {
                                                 </span>
                                             </div>
                                         </div>
-                                        <span className="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                                        <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">
                                             #{funcionario.id}
                                         </span>
                                     </div>
-                                    <div className="flex items-center justify-between border-t border-gray-100 pt-3">
-                                        <p className="text-sm text-gray-500">
-                                            <span className="text-gray-400">Login:</span>{' '}
-                                            <span className="font-mono text-gray-600">{funcionario.login}</span>
+                                    <div className="flex items-center justify-between border-t border-border pt-3">
+                                        <p className="text-sm text-muted-foreground">
+                                            <span className="text-muted-foreground/70">Login:</span>{' '}
+                                            <span className="font-mono text-foreground">{funcionario.login}</span>
                                         </p>
                                         <div className="flex items-center space-x-2">
                                             <Link
@@ -285,7 +282,7 @@ export default function ListaFuncionarios() {
                                                 className="action-btn action-btn-edit"
                                                 title="Editar"
                                             >
-                                                <FiEdit2 size={16} />
+                                                <Pencil size={16} />
                                             </Link>
                                             <button
                                                 onClick={() => {
@@ -295,7 +292,7 @@ export default function ListaFuncionarios() {
                                                 className="action-btn action-btn-delete cursor-pointer"
                                                 title="Excluir"
                                             >
-                                                <FiTrash2 size={16} />
+                                                <Trash2 size={16} />
                                             </button>
                                         </div>
                                     </div>
@@ -310,7 +307,7 @@ export default function ListaFuncionarios() {
                                 disabled={page === 0}
                                 className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
-                                <FiChevronLeft />
+                                <ChevronLeft size={16} />
                                 <span className="hidden sm:inline">Anterior</span>
                             </button>
                             <div className="pagination-info">
@@ -322,7 +319,7 @@ export default function ListaFuncionarios() {
                                 className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
                                 <span className="hidden sm:inline">Próxima</span>
-                                <FiChevronRight />
+                                <ChevronRight size={16} />
                             </button>
                         </div>
                     </>
@@ -343,13 +340,13 @@ export default function ListaFuncionarios() {
                                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                                 className="modal-content"
                             >
-                                <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <FiTrash2 className="text-red-500 text-2xl" />
+                                <div className="w-14 h-14 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Trash2 className="text-destructive" size={24} />
                                 </div>
                                 <h2 className="text-xl font-bold text-center mb-2">
                                     Confirmar Exclusão
                                 </h2>
-                                <p className="text-gray-500 text-center mb-6">
+                                <p className="text-muted-foreground text-center mb-6">
                                     Tem certeza que deseja excluir este funcionário? Esta ação não pode ser desfeita.
                                 </p>
                                 <div className="flex space-x-3">
