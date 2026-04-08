@@ -1,11 +1,13 @@
 "use client"
-import { useState, FormEvent, useRef, useEffect } from 'react';
+import { useState, FormEvent, useRef, useEffect, useCallback } from 'react';
 import api from '@/services/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import formatIsbn from "@/util/FormarIsbn";
 import { useAuth } from "@/resources/users/authentication.resourse";
-import { ArrowLeft, AlertCircle } from 'lucide-react';
+import AuthenticatedPage from '@/components/Authenticated/AuthenticatedPage';
+import { FiBook, FiUser, FiTag, FiHash, FiCheck, FiArrowLeft, FiSave } from 'react-icons/fi';
+import { motion } from 'framer-motion';
 
 export default function CreateLivro() {
     const router = useRouter();
@@ -29,7 +31,7 @@ export default function CreateLivro() {
     const submitButtonRef = useRef<HTMLButtonElement>(null);
     const auth = useAuth();
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = useCallback(async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
@@ -59,12 +61,12 @@ export default function CreateLivro() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [isbn, titulo, autor, categoria, disponibilidade, quantidade, token, router]);
 
-    const handleIsbnChange = (value: string) => {
+    const handleIsbnChange = useCallback((value: string) => {
         const raw = value.replace(/\D/g, '');
         setIsbn(formatIsbn(raw));
-    };
+    }, []);
 
     useEffect(() => {
         const cycleRefs = [tituloRef, autorRef, categoriaRef, quantidadeRef, isbnRef];
@@ -141,139 +143,199 @@ export default function CreateLivro() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [titulo, autor, categoria, quantidade, isbn, router]);
 
-    const inputClasses = "w-full h-10 px-3 text-sm bg-card text-foreground border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent placeholder:text-muted-foreground/60 transition-shadow";
-    const labelClasses = "block text-sm font-medium text-foreground mb-1.5";
-
     return (
-        <div className="max-w-lg mx-auto">
-            <div className="bg-card rounded-lg shadow-card border border-border">
-                {/* Header */}
-                <div className="px-6 py-5 border-b border-border">
-                    <h1 className="text-xl font-semibold text-foreground">Cadastrar Livro</h1>
-                    <p className="text-sm text-muted-foreground mt-0.5">Adicione um novo livro ao acervo</p>
-                </div>
-
-                <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                    {error && (
-                        <div className="flex items-center gap-2.5 p-3 rounded-lg bg-[#D92D20]/10 border border-[#D92D20]/20">
-                            <AlertCircle size={16} className="text-[#D92D20] flex-shrink-0" />
-                            <p className="text-sm text-[#D92D20]">{error}</p>
-                        </div>
-                    )}
-
-                    <div>
-                        <label className={labelClasses}>Título</label>
-                        <input
-                            ref={tituloRef}
-                            type="text"
-                            value={titulo}
-                            onChange={e => setTitulo(e.target.value)}
-                            required
-                            placeholder="Nome do livro"
-                            className={inputClasses}
-                        />
-                    </div>
-
-                    <div>
-                        <label className={labelClasses}>Autor</label>
-                        <input
-                            ref={autorRef}
-                            type="text"
-                            value={autor}
-                            onChange={e => setAutor(e.target.value)}
-                            required
-                            placeholder="Nome do autor"
-                            className={inputClasses}
-                        />
-                    </div>
-
-                    <div>
-                        <label className={labelClasses}>Categoria</label>
-                        <input
-                            ref={categoriaRef}
-                            type="text"
-                            value={categoria}
-                            onChange={e => setCategoria(e.target.value)}
-                            required
-                            placeholder="Ex: Ficção, Educação, Romance"
-                            className={inputClasses}
-                        />
-                    </div>
-
-                    <div>
-                        <label className={labelClasses}>Quantidade</label>
-                        <input
-                            ref={quantidadeRef}
-                            type="number"
-                            min="0"
-                            value={quantidade}
-                            onChange={(e) =>
-                                setQuantidade(e.target.value === "" ? "" : Number(e.target.value))
-                            }
-                            required
-                            placeholder="0"
-                            className={`${inputClasses} appearance-none [&::-webkit-inner-spin-button]:hidden [&::-webkit-outer-spin-button]:hidden`}
-                        />
-                    </div>
-
-                    <div>
-                        <label className="inline-flex items-center gap-3 cursor-pointer">
-                            <span className="text-sm font-medium text-foreground">Disponível</span>
-                            <div className="relative">
-                                <input
-                                    type="checkbox"
-                                    checked={disponibilidade}
-                                    onChange={e => setDisponibilidade(e.target.checked)}
-                                    className="sr-only peer"
-                                />
-                                <div className="w-10 h-[22px] bg-input rounded-full peer-checked:bg-[var(--success)] transition-colors" />
-                                <div className="absolute top-[3px] left-[3px] w-4 h-4 bg-white rounded-full peer-checked:translate-x-[18px] transition-transform shadow-sm" />
-                            </div>
-                        </label>
-                    </div>
-
-                    <div>
-                        <label className={labelClasses}>ISBN</label>
-                        <input
-                            ref={isbnRef}
-                            type="text"
-                            value={isbn}
-                            onChange={e => handleIsbnChange(e.target.value)}
-                            required
-                            placeholder="123-4-5678-9012-3"
-                            className={inputClasses}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1.5">Formato: 123-4-5678-9012-3</p>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex justify-between items-center pt-2">
+        <AuthenticatedPage>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="max-w-xl mx-auto"
+            >
+                <div className="page-container">
+                    {/* Header */}
+                    <div className="flex items-center space-x-3 mb-4">
                         <Link
                             href="/livros"
-                            className="inline-flex items-center gap-1.5 h-10 px-4 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
                         >
-                            <ArrowLeft size={16} />
-                            Voltar
+                            <FiArrowLeft size={16} />
                         </Link>
-                        <button
-                            ref={submitButtonRef}
-                            type="submit"
-                            disabled={loading}
-                            className="h-10 px-5 bg-[var(--primary)] text-white text-sm font-medium rounded-lg hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer"
-                        >
-                            {loading ? (
-                                <span className="flex items-center gap-2">
-                                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-25" />
-                                        <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                                    </svg>
-                                    Salvando...
-                                </span>
-                            ) : 'Cadastrar'}
-                        </button>
+                        <div>
+                            <h1 className="page-title text-lg">Cadastrar Novo Livro</h1>
+                            <p className="text-gray-500 text-xs">
+                                Preencha os dados do livro
+                            </p>
+                        </div>
                     </div>
-                </form>
-            </div>
-        </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-3">
+                        {/* Error Message */}
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-2"
+                            >
+                                <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-white text-[10px]">!</span>
+                                </div>
+                                <p className="text-red-600 text-xs">{error}</p>
+                            </motion.div>
+                        )}
+
+                        {/* Título */}
+                        <div className="form-group">
+                            <label className="form-label text-xs flex items-center space-x-1.5">
+                                <FiBook className="text-indigo-500" size={14} />
+                                <span>Título</span>
+                            </label>
+                            <input
+                                ref={tituloRef}
+                                type="text"
+                                value={titulo}
+                                onChange={e => setTitulo(e.target.value)}
+                                required
+                                placeholder="Digite o título do livro"
+                                className="input-modern text-sm py-2"
+                            />
+                        </div>
+
+                        {/* Autor e Categoria em grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {/* Autor */}
+                            <div className="form-group">
+                                <label className="form-label text-xs flex items-center space-x-1.5">
+                                    <FiUser className="text-indigo-500" size={14} />
+                                    <span>Autor</span>
+                                </label>
+                                <input
+                                    ref={autorRef}
+                                    type="text"
+                                    value={autor}
+                                    onChange={e => setAutor(e.target.value)}
+                                    required
+                                    placeholder="Nome do autor"
+                                    className="input-modern text-sm py-2"
+                                />
+                            </div>
+
+                            {/* Categoria */}
+                            <div className="form-group">
+                                <label className="form-label text-xs flex items-center space-x-1.5">
+                                    <FiTag className="text-indigo-500" size={14} />
+                                    <span>Categoria</span>
+                                </label>
+                                <input
+                                    ref={categoriaRef}
+                                    type="text"
+                                    value={categoria}
+                                    onChange={e => setCategoria(e.target.value)}
+                                    required
+                                    placeholder="Ex: Ficção, Romance..."
+                                    className="input-modern text-sm py-2"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Quantidade e ISBN em grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {/* Quantidade */}
+                            <div className="form-group">
+                                <label className="form-label text-xs flex items-center space-x-1.5">
+                                    <FiHash className="text-indigo-500" size={14} />
+                                    <span>Quantidade</span>
+                                </label>
+                                <input
+                                    ref={quantidadeRef}
+                                    type="number"
+                                    min="0"
+                                    value={quantidade}
+                                    onChange={(e) =>
+                                        setQuantidade(e.target.value === "" ? "" : Number(e.target.value))
+                                    }
+                                    required
+                                    placeholder="Exemplares"
+                                    className="input-modern text-sm py-2 appearance-none [&::-webkit-inner-spin-button]:hidden [&::-webkit-outer-spin-button]:hidden"
+                                />
+                            </div>
+
+                            {/* ISBN */}
+                            <div className="form-group">
+                                <label className="form-label text-xs flex items-center space-x-1.5">
+                                    <FiHash className="text-indigo-500" size={14} />
+                                    <span>ISBN</span>
+                                </label>
+                                <input
+                                    ref={isbnRef}
+                                    type="text"
+                                    value={isbn}
+                                    onChange={e => handleIsbnChange(e.target.value)}
+                                    required
+                                    placeholder="123-4-5678-9012-3"
+                                    className="input-modern font-mono text-sm py-2"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Disponibilidade Toggle */}
+                        <div className="form-group">
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <div className="flex items-center space-x-2">
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${disponibilidade ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-500'
+                                        }`}>
+                                        <FiCheck size={16} />
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-gray-800 text-sm">Disponível</p>
+                                        <p className="text-xs text-gray-500">
+                                            {disponibilidade ? 'Pode ser emprestado' : 'Indisponível'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <label className="toggle-switch">
+                                    <input
+                                        type="checkbox"
+                                        checked={disponibilidade}
+                                        onChange={e => setDisponibilidade(e.target.checked)}
+                                    />
+                                    <span className="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                            <Link
+                                href="/livros"
+                                className="btn-ghost text-sm flex items-center space-x-1.5 px-3 py-1.5"
+                            >
+                                <FiArrowLeft size={14} />
+                                <span>Voltar</span>
+                            </Link>
+                            <button
+                                ref={submitButtonRef}
+                                type="submit"
+                                disabled={loading}
+                                className="btn-success text-sm flex items-center space-x-1.5 px-4 py-2 cursor-pointer"
+                            >
+                                {loading ? (
+                                    <>
+                                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span>Salvando...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <FiSave size={14} />
+                                        <span>Cadastrar</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </motion.div>
+        </AuthenticatedPage>
     );
 }

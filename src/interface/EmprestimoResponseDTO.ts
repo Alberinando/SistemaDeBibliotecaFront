@@ -3,6 +3,7 @@ interface EmprestimoResponseDTO {
     livros: {
         id: number;
         titulo: string;
+        quantidade?: number;
     };
     membros: {
         id: number;
@@ -11,6 +12,8 @@ interface EmprestimoResponseDTO {
     dataEmprestimo: string;
     dataDevolucao: string | null;
     status: boolean;
+    quantidade: number;
 }
 
 export default EmprestimoResponseDTO;
+

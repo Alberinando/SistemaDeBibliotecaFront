@@ -9,5 +9,6 @@ export interface Membro {
 export interface MembroPage {
     content: Membro[];
     totalPages: number;
+    totalElements?: number;
     number: number;
 }

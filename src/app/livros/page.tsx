@@ -1,53 +1,74 @@
 "use client"
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '@/services/api';
-import { Pencil, Trash2, Plus, BookOpen, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FiEdit2, FiTrash2, FiPlus, FiBook, FiChevronLeft, FiChevronRight, FiAlertTriangle } from 'react-icons/fi';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Livro, LivroPage } from "@/interface/LivroPros";
-import { useAuth } from "@/resources/users/authentication.resourse";
+import { motion, AnimatePresence } from 'framer-motion';
 
-function SkeletonTable() {
-    return (
-        <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex gap-4">
-                    <div className="skeleton h-5 w-12 rounded" />
-                    <div className="skeleton h-5 flex-1 rounded" />
-                    <div className="skeleton h-5 w-28 rounded" />
-                    <div className="skeleton h-5 w-28 rounded" />
-                    <div className="skeleton h-5 w-20 rounded" />
-                </div>
-            ))}
+// Externalized Static Components
+const LoadingSkeleton = () => (
+    <div className="space-y-4">
+        {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-4 p-4">
+                <div className="skeleton h-6 w-12 rounded" />
+                <div className="skeleton h-6 flex-1 rounded" />
+                <div className="skeleton h-6 w-24 rounded" />
+                <div className="skeleton h-6 w-32 rounded" />
+                <div className="skeleton h-8 w-20 rounded" />
+            </div>
+        ))}
+    </div>
+);
+
+const EmptyState = () => (
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="empty-state"
+    >
+        <div className="empty-state-icon">
+            <FiBook size={36} />
         </div>
-    );
-}
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            Nenhum livro cadastrado
+        </h3>
+        <p className="text-gray-500 mb-6">
+            Comece adicionando o primeiro livro ao acervo
+        </p>
+        <Link
+            href="/livros/cadastrar"
+            className="btn-success inline-flex items-center space-x-2"
+        >
+            <FiPlus />
+            <span>Cadastrar Primeiro Livro</span>
+        </Link>
+    </motion.div>
+);
 
 export default function ListaLivros() {
     const [livros, setLivros] = useState<Livro[]>([]);
     const [page, setPage] = useState<number>(0);
     const [totalPages, setTotalPages] = useState<number>(0);
+    const [totalElements, setTotalElements] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [showModal, setShowModal] = useState<boolean>(false);
     const [toDeleteId, setToDeleteId] = useState<number | null>(null);
 
     const router = useRouter();
-    const auth = useAuth();
 
     const fetchLivros = useCallback(async () => {
         setLoading(true);
         setError(null);
-        const userSession = auth.getUserSession();
         try {
             const response = await api.get<LivroPage>('/v1/livros', {
-                params: { page, size: 10 },
-                headers: {
-                    "Authorization": `Bearer ${userSession?.accessToken}`
-                }
+                params: { page, size: 10 }
             });
             setLivros(response.data.content);
             setTotalPages(response.data.totalPages);
+            setTotalElements(response.data.totalElements || response.data.content.length);
         } catch (err) {
             console.error(err);
             setError('Falha ao carregar livros.');
@@ -63,8 +84,11 @@ export default function ListaLivros() {
                 router.push('/livros/cadastrar');
             }
         };
+
         window.addEventListener('keydown', handleGlobalShortcuts);
-        return () => window.removeEventListener('keydown', handleGlobalShortcuts);
+        return () => {
+            window.removeEventListener('keydown', handleGlobalShortcuts);
+        };
     }, [router]);
 
     useEffect(() => {
@@ -73,174 +97,273 @@ export default function ListaLivros() {
 
     useEffect(() => {
         if (!showModal) return;
+
         const handleModalKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Enter' && toDeleteId !== null) {
-                handleDelete();
+            if (event.key === 'Enter') {
+                if (toDeleteId !== null) {
+                    handleDelete();
+                }
             } else if (event.key === 'Escape') {
                 event.preventDefault();
+                if (document.activeElement instanceof HTMLElement) {
+                    document.activeElement.blur();
+                }
                 setShowModal(false);
                 setToDeleteId(null);
             }
         };
+
         window.addEventListener('keydown', handleModalKeyDown);
-        return () => window.removeEventListener('keydown', handleModalKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleModalKeyDown);
+        };
     }, [showModal, toDeleteId]);
 
-    const handleDelete = async () => {
+    const handleDelete = useCallback(async () => {
         if (!toDeleteId) return;
         try {
-            const userSession = auth.getUserSession();
-            await api.delete(`/v1/livros/${toDeleteId}`, {
-                headers: {
-                    "Authorization": `Bearer ${userSession?.accessToken}`
-                }
-            });
+            await api.delete(`/v1/livros/${toDeleteId}`);
             setShowModal(false);
             setToDeleteId(null);
             fetchLivros();
         } catch (err) {
             console.error(err);
-            setError('Erro ao excluir livro.');
+            alert('Erro ao excluir livro.');
         }
-    };
+    }, [toDeleteId, fetchLivros]);
+
+    // Loading Skeleton externalized
+    // Empty State externalized
 
     return (
-        <div className="bg-card rounded-lg shadow-card border border-border">
-            {/* Header */}
-            <div className="flex justify-between items-center px-6 py-5 border-b border-border">
-                <div>
-                    <h1 className="text-xl font-semibold text-foreground">Livros</h1>
-                    <p className="text-sm text-muted-foreground mt-0.5">Gerencie o acervo da biblioteca</p>
+        <>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="page-container"
+            >
+                {/* Header */}
+                <div className="page-header">
+                    <div>
+                        <h1 className="page-title">Lista de Livros</h1>
+                        {!loading && !error && livros.length > 0 && (
+                            <p className="text-gray-500 text-sm mt-1">
+                                {totalElements} livro{totalElements !== 1 ? 's' : ''} no acervo
+                            </p>
+                        )}
+                    </div>
+                    <Link
+                        href="/livros/cadastrar"
+                        className="btn-gradient flex items-center space-x-2"
+                    >
+                        <FiPlus />
+                        <span>Cadastrar Livro</span>
+                    </Link>
                 </div>
-                <Link
-                    href="/livros/cadastrar"
-                    className="inline-flex items-center gap-2 h-10 px-4 bg-[var(--primary)] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
-                >
-                    <Plus size={16} />
-                    Cadastrar
-                </Link>
-            </div>
 
-            <div className="p-6">
+                {/* Content */}
                 {loading ? (
-                    <SkeletonTable />
+                    <LoadingSkeleton />
                 ) : error ? (
-                    <div className="flex items-center gap-3 p-4 rounded-lg bg-[#D92D20]/10 border border-[#D92D20]/20">
-                        <AlertCircle size={18} className="text-[#D92D20] flex-shrink-0" />
-                        <p className="text-sm text-[#D92D20]">{error}</p>
+                    <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <FiAlertTriangle className="text-red-500 text-2xl" />
+                        </div>
+                        <p className="text-red-500 font-medium">{error}</p>
+                        <button
+                            onClick={() => fetchLivros()}
+                            className="mt-4 btn-ghost"
+                        >
+                            Tentar novamente
+                        </button>
                     </div>
                 ) : livros.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16">
-                        <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
-                            <BookOpen size={24} className="text-muted-foreground" />
-                        </div>
-                        <h3 className="text-base font-medium text-foreground mb-1">Nenhum livro cadastrado</h3>
-                        <p className="text-sm text-muted-foreground mb-5">Comece adicionando o primeiro livro ao acervo.</p>
-                        <Link
-                            href="/livros/cadastrar"
-                            className="inline-flex items-center gap-2 h-10 px-4 bg-[var(--primary)] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
-                        >
-                            <Plus size={16} />
-                            Cadastrar Livro
-                        </Link>
-                    </div>
+                    <EmptyState />
                 ) : (
                     <>
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
+                        {/* Desktop Table */}
+                        <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200/50">
+                            <table className="table-modern">
                                 <thead>
-                                    <tr className="border-b border-border">
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">ID</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Título</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Categoria</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Autor</th>
-                                        <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">Ações</th>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Título</th>
+                                        <th>Categoria</th>
+                                        <th>Autor</th>
+                                        <th className="text-center">Ações</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-border">
-                                    {livros.map(livro => (
-                                        <tr key={livro.id} className="hover:bg-muted/50 transition-colors">
-                                            <td className="px-4 py-3 text-sm text-muted-foreground">{livro.id}</td>
-                                            <td className="px-4 py-3 text-sm text-foreground font-medium">{livro.titulo}</td>
-                                            <td className="px-4 py-3 text-sm text-muted-foreground">{livro.categoria}</td>
-                                            <td className="px-4 py-3 text-sm text-muted-foreground">{livro.autor}</td>
-                                            <td className="px-4 py-3">
-                                                <div className="flex justify-center gap-1">
+                                <tbody>
+                                    {livros.map((livro, index) => (
+                                        <motion.tr
+                                            key={livro.id}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.03 }}
+                                        >
+                                            <td className="font-mono text-gray-500">
+                                                #{livro.id}
+                                            </td>
+                                            <td className="font-medium text-gray-800">
+                                                {livro.titulo}
+                                            </td>
+                                            <td>
+                                                <span className="badge badge-info">
+                                                    {livro.categoria}
+                                                </span>
+                                            </td>
+                                            <td className="text-gray-600">
+                                                {livro.autor}
+                                            </td>
+                                            <td>
+                                                <div className="flex items-center justify-center space-x-2">
                                                     <Link
                                                         href={`/livros/${livro.id}`}
-                                                        className="p-2 rounded-md text-muted-foreground hover:text-[var(--primary)] hover:bg-[var(--primary)]/10 transition-colors"
+                                                        className="action-btn action-btn-edit"
+                                                        title="Editar"
                                                     >
-                                                        <Pencil size={16} />
+                                                        <FiEdit2 size={18} />
                                                     </Link>
                                                     <button
-                                                        onClick={() => { setShowModal(true); setToDeleteId(livro.id); }}
-                                                        className="p-2 rounded-md text-muted-foreground hover:text-[#D92D20] hover:bg-[#D92D20]/10 transition-colors cursor-pointer"
+                                                        onClick={() => {
+                                                            setShowModal(true);
+                                                            setToDeleteId(livro.id);
+                                                        }}
+                                                        className="action-btn action-btn-delete cursor-pointer"
+                                                        title="Excluir"
                                                     >
-                                                        <Trash2 size={16} />
+                                                        <FiTrash2 size={18} />
                                                     </button>
                                                 </div>
                                             </td>
-                                        </tr>
+                                        </motion.tr>
                                     ))}
                                 </tbody>
                             </table>
                         </div>
 
+                        {/* Mobile Cards */}
+                        <div className="md:hidden space-y-3">
+                            {livros.map((livro, index) => (
+                                <motion.div
+                                    key={livro.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.03 }}
+                                    className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+                                >
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="flex-1">
+                                            <p className="font-medium text-gray-800 text-base">
+                                                {livro.titulo}
+                                            </p>
+                                            <p className="text-gray-500 text-sm mt-0.5">
+                                                {livro.autor}
+                                            </p>
+                                        </div>
+                                        <span className="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                                            #{livro.id}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="badge badge-info text-xs">
+                                            {livro.categoria}
+                                        </span>
+                                        <div className="flex items-center space-x-2">
+                                            <Link
+                                                href={`/livros/${livro.id}`}
+                                                className="action-btn action-btn-edit"
+                                                title="Editar"
+                                            >
+                                                <FiEdit2 size={16} />
+                                            </Link>
+                                            <button
+                                                onClick={() => {
+                                                    setShowModal(true);
+                                                    setToDeleteId(livro.id);
+                                                }}
+                                                className="action-btn action-btn-delete cursor-pointer"
+                                                title="Excluir"
+                                            >
+                                                <FiTrash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+
                         {/* Pagination */}
-                        <div className="flex items-center justify-between pt-4 mt-4 border-t border-border">
+                        <div className="pagination">
                             <button
                                 onClick={() => setPage(prev => Math.max(prev - 1, 0))}
                                 disabled={page === 0}
-                                className="inline-flex items-center gap-1.5 h-9 px-3 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                                className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
-                                <ChevronLeft size={16} />
-                                Anterior
+                                <FiChevronLeft />
+                                <span className="hidden sm:inline">Anterior</span>
                             </button>
-                            <span className="text-sm text-muted-foreground">
-                                Página {page + 1} de {totalPages}
-                            </span>
+                            <div className="pagination-info">
+                                <span className="hidden sm:inline">Página </span>{page + 1} <span className="hidden sm:inline">de</span><span className="sm:hidden">/</span> {totalPages || 1}
+                            </div>
                             <button
                                 onClick={() => setPage(prev => Math.min(prev + 1, totalPages - 1))}
                                 disabled={page + 1 >= totalPages}
-                                className="inline-flex items-center gap-1.5 h-9 px-3 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                                className="pagination-btn flex items-center space-x-1 cursor-pointer"
                             >
-                                Próxima
-                                <ChevronRight size={16} />
+                                <span className="hidden sm:inline">Próxima</span>
+                                <FiChevronRight />
                             </button>
                         </div>
                     </>
                 )}
-            </div>
 
-            {/* Delete Modal */}
-            {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-black/50" onClick={() => { setShowModal(false); setToDeleteId(null); }} />
-                    <div className="relative z-10 bg-card p-6 rounded-lg shadow-modal w-[400px] max-w-[90vw] border border-border">
-                        <div className="w-11 h-11 rounded-full bg-[#D92D20]/10 flex items-center justify-center mb-4">
-                            <Trash2 size={20} className="text-[#D92D20]" />
-                        </div>
-                        <h2 className="text-lg font-semibold text-foreground mb-1">Excluir livro</h2>
-                        <p className="text-sm text-muted-foreground mb-6">
-                            Esta ação é irreversível. O livro será removido permanentemente do acervo.
-                        </p>
-                        <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => { setShowModal(false); setToDeleteId(null); }}
-                                className="h-10 px-4 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors cursor-pointer"
+                {/* Delete Modal */}
+                <AnimatePresence>
+                    {showModal && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="modal-overlay"
+                        >
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                className="modal-content"
                             >
-                                Voltar
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                className="h-10 px-4 text-sm font-medium text-white bg-[#D92D20] rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
-                            >
-                                Sim, excluir livro
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+                                <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <FiTrash2 className="text-red-500 text-2xl" />
+                                </div>
+                                <h2 className="text-xl font-bold text-center mb-2">
+                                    Confirmar Exclusão
+                                </h2>
+                                <p className="text-gray-500 text-center mb-6">
+                                    Tem certeza que deseja excluir este livro? Esta ação não pode ser desfeita.
+                                </p>
+                                <div className="flex space-x-3">
+                                    <button
+                                        onClick={() => {
+                                            setShowModal(false);
+                                            setToDeleteId(null);
+                                        }}
+                                        className="flex-1 btn-ghost cursor-pointer"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        onClick={handleDelete}
+                                        className="flex-1 btn-danger cursor-pointer"
+                                    >
+                                        Excluir
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.div>
+        </>
     );
 }

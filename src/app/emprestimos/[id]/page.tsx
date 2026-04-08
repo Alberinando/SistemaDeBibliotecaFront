@@ -4,16 +4,36 @@ import { useState, useEffect, FormEvent } from "react";
 import api from "@/services/api";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import {Livro} from "@/interface/LivroPros";
-import {Membro} from "@/interface/MembrosProps";
+import { Livro } from "@/interface/LivroPros";
+import { Membro } from "@/interface/MembrosProps";
 import EmprestimoResponseDTO from "@/interface/EmprestimoResponseDTO";
-import {useAuth} from "@/resources/users/authentication.resourse";
+import { useAuth } from "@/resources/users/authentication.resourse";
 import AuthenticatedPage from "@/components/Authenticated/AuthenticatedPage";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Button} from "@/components/ui/button";
-import {ChevronDownIcon} from "lucide-react";
-import {Calendar} from "@/components/ui/calendar";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { ChevronDownIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FiBook, FiUser, FiCalendar, FiCheck, FiArrowLeft, FiSave } from 'react-icons/fi';
+import { motion } from 'framer-motion';
+
+// Externalized Helpers & Components
+function dateToIsoAtMidnightLocal(date?: Date | undefined) {
+    if (!date) return null;
+    const localMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    return localMidnight.toISOString();
+}
+
+const LoadingSkeleton = () => (
+    <div className="space-y-6">
+        {[...Array(4)].map((_, i) => (
+            <div key={i} className="space-y-2">
+                <div className="skeleton h-4 w-24 rounded" />
+                <div className="skeleton h-12 w-full rounded-xl" />
+            </div>
+        ))}
+    </div>
+);
 
 export default function EditEmprestimo() {
     const router = useRouter();
@@ -25,9 +45,11 @@ export default function EditEmprestimo() {
     const [dataEmprestimo, setDataEmprestimo] = useState<Date | undefined>(new Date());
     const [dataDevolucao, setDataDevolucao] = useState<Date | undefined>(undefined);
     const [status, setStatus] = useState<boolean>(true);
+    const [quantidade, setQuantidade] = useState<string>('');
     const [livros, setLivros] = useState<Livro[]>([]);
     const [membros, setMembros] = useState<Membro[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [saving, setSaving] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [openEmprestimo, setOpenEmprestimo] = useState<boolean>(false);
@@ -69,7 +91,6 @@ export default function EditEmprestimo() {
             try {
                 const userSession = auth.getUserSession();
 
-                // garante que já tem livros e membros antes
                 if (livros.length === 0 || membros.length === 0) return;
 
                 const res = await api.get<EmprestimoResponseDTO>(`/v1/emprestimos/${id}`, {
@@ -85,6 +106,8 @@ export default function EditEmprestimo() {
                 setDataEmprestimo(new Date(emp.dataEmprestimo));
                 setDataDevolucao(emp.dataDevolucao ? new Date(emp.dataDevolucao) : undefined);
                 setStatus(emp.status);
+                setQuantidade(emp.quantidade.toString());
+                setLoading(false);
             } catch (err) {
                 console.error(err);
                 setFetchError("Não foi possível carregar os dados do empréstimo.");
@@ -94,16 +117,19 @@ export default function EditEmprestimo() {
         fetchEmprestimo();
     }, [id, livros, membros]);
 
-    function dateToIsoAtMidnightLocal(date?: Date | undefined) {
-        if (!date) return null;
-        const localMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-        return localMidnight.toISOString();
-    }
+    /* Helper removed (externalized) */
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        setLoading(true);
+        setSaving(true);
         setError(null);
+
+        if (!quantidade || parseInt(quantidade) <= 0) {
+            setError("Informe uma quantidade válida.");
+            setSaving(false);
+            return;
+        }
+
         const userSession = auth.getUserSession();
 
         try {
@@ -117,6 +143,7 @@ export default function EditEmprestimo() {
                 dataEmprestimo: dataEmprestimoISO,
                 dataDevolucao: dataDevolucaoISO,
                 status,
+                quantidade: parseInt(quantidade)
             },
                 {
                     headers: {
@@ -129,182 +156,275 @@ export default function EditEmprestimo() {
             console.error(err);
             setError("Erro ao atualizar empréstimo.");
         } finally {
-            setLoading(false);
+            setSaving(false);
         }
     };
+
+    // Loading Skeleton externalized
 
     if (fetchError) {
         return (
             <AuthenticatedPage>
-                <div className="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg">
-                    <p className="text-red-600 text-center">{fetchError}</p>
-                    <div className="text-center mt-4">
-                        <Link
-                            href="/emprestimos"
-                            className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
-                        >
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="max-w-2xl mx-auto"
+                >
+                    <div className="page-container text-center">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span className="text-red-500 text-2xl">!</span>
+                        </div>
+                        <p className="text-red-600 font-medium mb-6">{fetchError}</p>
+                        <Link href="/emprestimos" className="btn-ghost">
                             Voltar
                         </Link>
                     </div>
-                </div>
+                </motion.div>
             </AuthenticatedPage>
         );
     }
 
     return (
         <AuthenticatedPage>
-        <div className="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg">
-            <h1 className="text-3xl font-bold mb-6 text-center">Editar Empréstimo</h1>
-            {error && <div className="mb-4 text-red-600 text-center">{error}</div>}
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                    <label htmlFor="livro" className="block text-lg font-semibold mb-2 cursor-pointer">
-                        Livro
-                    </label>
-                    <Select
-                        value={livroId}
-                        onValueChange={(value) => setLivroId(value)}
-                        name="livro"
-                        required
-                    >
-                        <SelectTrigger
-                            id="livro"
-                            className="w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-4 text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="max-w-xl mx-auto"
+            >
+                <div className="page-container">
+                    {/* Header */}
+                    <div className="flex items-center space-x-3 mb-4">
+                        <Link
+                            href="/emprestimos"
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
                         >
-                            <SelectValue placeholder="Selecione um livro" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white border border-gray-200 rounded-md mt-1 shadow-lg">
-                            {livros.map((livro) => (
-                                <SelectItem
-                                    key={livro.id}
-                                    value={livro.id.toString()}
-                                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                                >
-                                    {livro.titulo}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <div>
-                    <label htmlFor="membro" className="block text-lg font-semibold mb-2 cursor-pointer">
-                        Membro
-                    </label>
-                    <Select
-                        value={membroId}
-                        onValueChange={(value) => setMembroId(value)}
-                        name="membro"
-                        required
-                    >
-                        <SelectTrigger
-                            id="membro"
-                            className="w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-4 text-left flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                        >
-                            <SelectValue placeholder="Selecione um membro" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white border border-gray-200 rounded-md mt-1 shadow-lg">
-                            {membros.map((membro) => (
-                                <SelectItem
-                                    key={membro.id}
-                                    value={membro.id.toString()}
-                                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer "
-                                >
-                                    {membro.nome}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <div>
-                    <label htmlFor="dataEmprestimo" className="block text-lg font-semibold mb-2">
-                        Data de Empréstimo
-                    </label>
-                    <Popover open={openEmprestimo} onOpenChange={setOpenEmprestimo}>
-                        <PopoverTrigger asChild className="cursor-pointer">
-                            <Button
-                                variant="outline"
-                                id="date"
-                                className="w-48 justify-between font-normal"
-                            >
-                                {dataEmprestimo ? dataEmprestimo.toLocaleDateString() : "Selecione a data"}
-                                <ChevronDownIcon />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-                            <Calendar
-                                mode="single"
-                                selected={dataEmprestimo}
-                                onSelect={(date) => setDataEmprestimo(date)}
-                                captionLayout="dropdown"
-                            />
-                        </PopoverContent>
-                    </Popover>
-                </div>
-
-                <div>
-                    <label htmlFor="dataDevolucao" className="block text-lg font-semibold mb-2">
-                        Data de Devolução
-                    </label>
-                    <Popover open={openDevolucao} onOpenChange={setOpenDevolucao}>
-                        <PopoverTrigger asChild className="cursor-pointer">
-                            <Button
-                                variant="outline"
-                                id="date"
-                                className="w-48 justify-between font-normal"
-                            >
-                                {dataDevolucao ? dataDevolucao.toLocaleDateString() : "Selecione a data"}
-                                <ChevronDownIcon />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-                            <Calendar
-                                mode="single"
-                                selected={dataDevolucao}
-                                onSelect={setDataDevolucao}
-                                captionLayout="dropdown"
-                            />
-                        </PopoverContent>
-                    </Popover>
-                </div>
-
-                <div>
-                    <label htmlFor="status" className="flex items-center cursor-pointer">
-                        <span className="text-lg font-semibold mr-3">Status</span>
-                        <div className="relative">
-                            <input
-                                id="status"
-                                type="checkbox"
-                                checked={status}
-                                onChange={(e) => setStatus(e.target.checked)}
-                                className="sr-only peer"
-                            />
-                            <div className="w-12 h-6 bg-gray-300 rounded-full peer peer-checked:bg-green-500 transition"></div>
-                            <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-6"></div>
+                            <FiArrowLeft size={16} />
+                        </Link>
+                        <div>
+                            <h1 className="page-title text-lg">Editar Empréstimo</h1>
+                            <p className="text-gray-500 text-xs">
+                                Atualize as informações do empréstimo
+                            </p>
                         </div>
-                        <span className="ml-3 text-lg font-medium">{status ? "Ativo" : "Inativo"}</span>
-                    </label>
-                </div>
+                    </div>
 
-                <div className="flex justify-between items-center mt-8">
-                    <Link
-                        href="/emprestimos"
-                        className="cursor-pointer px-6 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition"
-                    >
-                        Voltar
-                    </Link>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="cursor-pointer px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition disabled:opacity-50"
-                    >
-                        {loading ? "Atualizando..." : "Atualizar"}
-                    </button>
+                    {loading ? (
+                        <LoadingSkeleton />
+                    ) : (
+                        <form onSubmit={handleSubmit} className="space-y-3">
+                            {/* Error Message */}
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-2"
+                                >
+                                    <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <span className="text-white text-[10px]">!</span>
+                                    </div>
+                                    <p className="text-red-600 text-xs">{error}</p>
+                                </motion.div>
+                            )}
+
+                            {/* Livro e Membro em grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {/* Livro */}
+                                <div className="form-group">
+                                    <label className="form-label text-xs flex items-center space-x-1.5">
+                                        <FiBook className="text-indigo-500" size={14} />
+                                        <span>Livro</span>
+                                    </label>
+                                    <Select
+                                        value={livroId}
+                                        onValueChange={(value) => setLivroId(value)}
+                                        name="livro"
+                                        required
+                                    >
+                                        <SelectTrigger className="input-modern text-sm py-2 cursor-pointer">
+                                            <SelectValue placeholder="Selecione" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-white border border-gray-200 rounded-lg shadow-lg">
+                                            {livros.map((livro) => (
+                                                <SelectItem
+                                                    key={livro.id}
+                                                    value={livro.id.toString()}
+                                                    className="px-3 py-1.5 hover:bg-gray-50 cursor-pointer rounded text-sm"
+                                                >
+                                                    {livro.titulo}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* Membro */}
+                                <div className="form-group">
+                                    <label className="form-label text-xs flex items-center space-x-1.5">
+                                        <FiUser className="text-indigo-500" size={14} />
+                                        <span>Membro</span>
+                                    </label>
+                                    <Select
+                                        value={membroId}
+                                        onValueChange={(value) => setMembroId(value)}
+                                        name="membro"
+                                        required
+                                    >
+                                        <SelectTrigger className="input-modern text-sm py-2 cursor-pointer">
+                                            <SelectValue placeholder="Selecione" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-white border border-gray-200 rounded-lg shadow-lg">
+                                            {membros.map((membro) => (
+                                                <SelectItem
+                                                    key={membro.id}
+                                                    value={membro.id.toString()}
+                                                    className="px-3 py-1.5 hover:bg-gray-50 cursor-pointer rounded text-sm"
+                                                >
+                                                    {membro.nome}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            {/* Quantidade */}
+                            <div className="form-group">
+                                <label className="form-label text-xs flex items-center space-x-1.5">
+                                    <FiBook className="text-indigo-500" size={14} />
+                                    <span>Quantidade</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={quantidade}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === '' || /^\d+$/.test(val)) {
+                                            setQuantidade(val);
+                                        }
+                                    }}
+                                    required
+                                    placeholder="Qtd"
+                                    className="input-modern"
+                                />
+                            </div>
+
+                            {/* Datas em grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {/* Data de Empréstimo */}
+                                <div className="form-group">
+                                    <label className="form-label text-xs flex items-center space-x-1.5">
+                                        <FiCalendar className="text-indigo-500" size={14} />
+                                        <span>Data Empréstimo</span>
+                                    </label>
+                                    <Popover open={openEmprestimo} onOpenChange={setOpenEmprestimo}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-between input-modern text-sm py-2 cursor-pointer"
+                                            >
+                                                {dataEmprestimo ? dataEmprestimo.toLocaleDateString('pt-BR') : "Selecione"}
+                                                <ChevronDownIcon className="text-gray-400" size={16} />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0 bg-white rounded-lg shadow-xl border" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={dataEmprestimo}
+                                                onSelect={(date) => setDataEmprestimo(date)}
+                                                captionLayout="dropdown"
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+
+                                {/* Data de Devolução */}
+                                <div className="form-group">
+                                    <label className="form-label text-xs flex items-center space-x-1.5">
+                                        <FiCalendar className="text-indigo-500" size={14} />
+                                        <span>Data Devolução</span>
+                                    </label>
+                                    <Popover open={openDevolucao} onOpenChange={setOpenDevolucao}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-between input-modern text-sm py-2 cursor-pointer"
+                                            >
+                                                {dataDevolucao ? dataDevolucao.toLocaleDateString('pt-BR') : "Selecione"}
+                                                <ChevronDownIcon className="text-gray-400" size={16} />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0 bg-white rounded-lg shadow-xl border" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={dataDevolucao}
+                                                onSelect={setDataDevolucao}
+                                                captionLayout="dropdown"
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                            </div>
+
+                            {/* Status Toggle */}
+                            <div className="form-group">
+                                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                    <div className="flex items-center space-x-2">
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${status ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-500'
+                                            }`}>
+                                            <FiCheck size={16} />
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-gray-800 text-sm">Status</p>
+                                            <p className="text-xs text-gray-500">
+                                                {status ? 'Ativo' : 'Encerrado'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <label className="toggle-switch">
+                                        <input
+                                            type="checkbox"
+                                            checked={status}
+                                            onChange={(e) => setStatus(e.target.checked)}
+                                        />
+                                        <span className="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                                <Link
+                                    href="/emprestimos"
+                                    className="btn-ghost text-sm flex items-center space-x-1.5 px-3 py-1.5"
+                                >
+                                    <FiArrowLeft size={14} />
+                                    <span>Voltar</span>
+                                </Link>
+                                <button
+                                    type="submit"
+                                    disabled={saving}
+                                    className="btn-success text-sm flex items-center space-x-1.5 px-4 py-2 cursor-pointer"
+                                >
+                                    {saving ? (
+                                        <>
+                                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <span>Atualizando...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FiSave size={14} />
+                                            <span>Atualizar</span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    )}
                 </div>
-            </form>
-        </div>
+            </motion.div>
         </AuthenticatedPage>
     );
 }

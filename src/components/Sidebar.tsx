@@ -1,138 +1,181 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import menuItems from "@/util/Options";
-import { Menu, X, LogOut, Library, Sun, Moon } from "lucide-react";
-import { useAuth } from "@/resources/users/authentication.resourse";
+import { FaBars, FaTimes, FaSignOutAlt, FaBook } from "react-icons/fa";
+import { useSession, signOut } from "next-auth/react";
+import { motion, AnimatePresence } from "framer-motion";
+import NotificationBell from "@/components/ui/NotificationBell";
 
 const Sidebar: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [isDark, setIsDark] = useState(false);
     const pathname = usePathname();
-    const auth = useAuth();
-    const router = useRouter();
+    const { data: session, status } = useSession();
 
-    useEffect(() => {
-        setIsDark(document.documentElement.classList.contains("dark"));
-    }, []);
-
-    function toggleTheme() {
-        const html = document.documentElement;
-        if (html.classList.contains("dark")) {
-            html.classList.remove("dark");
-            localStorage.setItem("theme", "light");
-            setIsDark(false);
-        } else {
-            html.classList.add("dark");
-            localStorage.setItem("theme", "dark");
-            setIsDark(true);
-        }
-    }
+    const user = session?.user;
+    const isMounted = status !== "loading";
 
     function logout() {
-        auth.invalidateSession();
-        router.push("/");
+        signOut({ callbackUrl: "/" });
     }
 
-    const toggleSidebar = () => setIsOpen((prev) => !prev);
+    const toggleSidebar = () => setIsOpen((prevState) => !prevState);
 
     return (
         <>
-            {/* Mobile top bar */}
-            <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-4 bg-[var(--sidebar)] border-b border-[var(--sidebar-border)]">
-                <div className="flex items-center gap-2">
-                    <Library size={20} className="text-[var(--sidebar-primary)]" />
-                    <span className="text-[var(--sidebar-foreground)] font-semibold text-sm">
+            {/* Mobile Header */}
+            <div
+                className={`md:hidden fixed top-0 left-0 z-50 w-full h-16 flex items-center justify-between px-4 transition-all duration-300 ${isOpen
+                    ? "bg-transparent"
+                    : "bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-900 shadow-lg"
+                    }`}
+            >
+                <div className="flex items-center">
+                    <button
+                        onClick={toggleSidebar}
+                        className="p-2 text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                        aria-label="Abrir Menu"
+                    >
+                        <FaBars size={22} />
+                    </button>
+                    <span className="ml-4 text-white font-semibold text-lg">
                         Biblioteca
                     </span>
                 </div>
-                <button
-                    onClick={toggleSidebar}
-                    className="text-[var(--sidebar-foreground)] p-1 hover:opacity-80 transition-opacity"
-                    aria-label="Abrir Menu"
-                >
-                    <Menu size={22} />
-                </button>
+                {/* Single NotificationBell - shown on mobile when sidebar is closed */}
+                {isMounted && (
+                    <div className={isOpen ? 'hidden' : 'block md:hidden'}>
+                        <NotificationBell />
+                    </div>
+                )}
             </div>
 
-            {/* Overlay */}
-            {isOpen && (
-                <div
-                    className="fixed inset-0 bg-black/40 z-40 md:hidden transition-opacity"
-                    onClick={toggleSidebar}
-                />
-            )}
+            {/* Mobile Overlay */}
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+                        onClick={toggleSidebar}
+                    />
+                )}
+            </AnimatePresence>
 
             {/* Sidebar */}
             <aside
-                className={`fixed top-0 left-0 h-screen w-64 bg-[var(--sidebar)] text-[var(--sidebar-foreground)] flex flex-col z-50 transform transition-transform duration-200 ease-out ${
-                    isOpen ? "translate-x-0" : "-translate-x-full"
-                } md:translate-x-0 md:static md:flex-shrink-0`}
+                className={`fixed top-0 left-0 h-screen w-60 z-50 transform transition-transform duration-300 ease-out ${isOpen ? "translate-x-0" : "-translate-x-full"
+                    } md:translate-x-0 flex flex-col`}
+                style={{
+                    background: "linear-gradient(180deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)",
+                }}
             >
-                {/* Header */}
-                <div className="flex items-center justify-between h-16 px-5 border-b border-[var(--sidebar-border)]">
-                    <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-[var(--sidebar-primary)] flex items-center justify-center">
-                            <Library size={18} className="text-white" />
-                        </div>
-                        <span className="font-semibold text-sm tracking-tight">
-                            Biblioteca
-                        </span>
-                    </div>
+                {/* Glass overlay effect */}
+                <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+
+                {/* Close button for mobile */}
+                <div className="md:hidden absolute top-3 right-3 z-10">
                     <button
                         onClick={toggleSidebar}
-                        className="md:hidden text-[var(--sidebar-foreground)] p-1 hover:opacity-80 transition-opacity"
+                        className="p-1.5 text-indigo-200 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                         aria-label="Fechar Menu"
                     >
-                        <X size={20} />
+                        <FaTimes size={18} />
                     </button>
                 </div>
 
+                {/* Logo Section */}
+                <div className="relative flex flex-col items-center justify-center py-4 border-b border-white/10 shrink-0">
+                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30 mb-2">
+                        <FaBook className="text-white text-lg" />
+                    </div>
+                    <h1 className="text-base font-bold text-white tracking-tight">
+                        Biblioteca
+                    </h1>
+                    <span className="text-indigo-300 text-xs">
+                        Sistema de Gestão
+                    </span>
+                </div>
+
+                {/* User Info & Notifications for Desktop */}
+                {isMounted && user && (
+                    <div className="relative px-3 py-3 border-b border-white/10 shrink-0">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] uppercase tracking-wider text-indigo-300 font-semibold">
+                                Perfil
+                            </span>
+                            {/* NotificationBell for desktop only */}
+                            <div className="hidden md:block">
+                                <NotificationBell />
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg">
+                                {user.name?.charAt(0).toUpperCase() || "U"}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-white font-medium text-xs truncate">
+                                    {user.name || "Usuário"}
+                                </p>
+                                <p className="text-indigo-300 text-[10px] truncate">
+                                    Funcionário
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Navigation */}
-                <nav className="flex-1 overflow-y-auto py-3 px-3">
-                    <div className="space-y-0.5">
-                        {menuItems.map((item) => {
+                <nav className="relative flex-1 py-2 overflow-y-auto custom-scrollbar">
+                    <div className="px-2 space-y-0.5">
+                        {menuItems.map((item, index) => {
                             const isActive = pathname === item.href;
                             return (
-                                <Link
+                                <motion.div
                                     key={item.name}
-                                    href={item.href}
-                                    className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
-                                        isActive
-                                            ? "bg-[var(--sidebar-primary)] text-white"
-                                            : "text-[var(--sidebar-foreground)] hover:bg-[var(--sidebar-accent)]"
-                                    }`}
-                                    onClick={() => setIsOpen(false)}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.05 }}
                                 >
-                                    <span className={`flex-shrink-0 ${isActive ? "text-white" : "text-[var(--muted-foreground)]"}`}>
-                                        {item.icon}
-                                    </span>
-                                    <span>{item.name}</span>
-                                </Link>
+                                    <Link
+                                        href={item.href}
+                                        className={`group flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${isActive
+                                            ? "bg-white/15 text-white shadow-lg shadow-black/10"
+                                            : "text-indigo-200 hover:bg-white/10 hover:text-white"
+                                            }`}
+                                        onClick={() => setIsOpen(false)}
+                                    >
+                                        <span className={`text-sm transition-transform duration-200 ${isActive ? "scale-110" : "group-hover:scale-110"
+                                            }`}>
+                                            {item.icon}
+                                        </span>
+                                        <span className="ml-2.5 font-medium text-sm">
+                                            {item.name}
+                                        </span>
+                                        {isActive && (
+                                            <motion.div
+                                                layoutId="activeIndicator"
+                                                className="ml-auto w-1.5 h-1.5 bg-white rounded-full shadow-lg shadow-white/50"
+                                            />
+                                        )}
+                                    </Link>
+                                </motion.div>
                             );
                         })}
                     </div>
                 </nav>
 
-                {/* Footer */}
-                <div className="p-3 border-t border-[var(--sidebar-border)] space-y-1.5">
-                    {/* Theme toggle */}
-                    <button
-                        onClick={toggleTheme}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-[var(--sidebar-foreground)] hover:bg-[var(--sidebar-accent)] transition-colors cursor-pointer"
-                    >
-                        {isDark ? <Sun size={18} /> : <Moon size={18} />}
-                        <span>{isDark ? "Modo Claro" : "Modo Escuro"}</span>
-                    </button>
-
-                    {/* Logout */}
+                {/* Logout Button */}
+                <div className="relative p-3 border-t border-white/10 shrink-0">
                     <button
                         onClick={logout}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                        className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-medium text-sm rounded-lg transition-all duration-200 shadow-lg shadow-rose-500/30 hover:shadow-rose-500/50 cursor-pointer"
                     >
-                        <LogOut size={18} />
-                        <span>Sair</span>
+                        <FaSignOutAlt size={14} />
+                        <span>Sair do Sistema</span>
                     </button>
                 </div>
             </aside>

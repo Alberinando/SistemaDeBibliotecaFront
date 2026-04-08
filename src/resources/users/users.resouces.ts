@@ -1,4 +1,4 @@
-import {JwtPayload} from "jwt-decode";
+import { JwtPayload } from "jwt-decode";
 
 export class Users {
     name?: string;
@@ -11,17 +11,30 @@ export class Credentials {
     senha?: string;
 }
 
+// Mantido para compatibilidade
 export class AcessToken {
     accessToken?: string;
 }
 
+// Nova resposta de autenticação com refresh token
+export interface AuthResponse {
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number; // tempo em segundos
+    tokenType: string;
+}
+
 export class UserSessionToken {
+    id?: number;
     name?: string;
     login?: string;
     accessToken?: string;
+    refreshToken?: string;
     expiration?: number;
 }
 
 export interface ExtendedJwtPayload extends JwtPayload {
+    id?: number;
     name?: string;
 }
+

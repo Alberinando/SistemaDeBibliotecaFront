@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
+import AuthProvider from "@/components/providers/AuthProvider";
 
 const inter = Inter({
     variable: "--font-inter",
@@ -11,7 +12,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
     title: "Sistema de Biblioteca",
-    description: "Sistema de gerenciamento de biblioteca — controle de livros, membros e empréstimos.",
+    description: "Sistema de Gerenciamento de Biblioteca",
 };
 
 export default function RootLayout({
@@ -20,25 +21,11 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="pt-br" suppressHydrationWarning>
-            <head>
-                <script
-                    dangerouslySetInnerHTML={{
-                        __html: `
-                            (function() {
-                                try {
-                                    var theme = localStorage.getItem('theme');
-                                    if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                                        document.documentElement.classList.add('dark');
-                                    }
-                                } catch(e) {}
-                            })();
-                        `,
-                    }}
-                />
-            </head>
-            <body className={`${inter.variable} antialiased`}>
-                <LayoutWrapper>{children}</LayoutWrapper>
+        <html lang="pt-br">
+            <body className={`${inter.variable} font-sans antialiased bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20 min-h-screen`}>
+                <AuthProvider>
+                    <LayoutWrapper>{children}</LayoutWrapper>
+                </AuthProvider>
             </body>
         </html>
     );
