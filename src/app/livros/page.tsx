@@ -4,7 +4,7 @@ import api from '@/services/api';
 import { Pencil, Trash2, Plus, BookOpen, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Livro, LivroPage } from "@/interface/LivroProps";
+import { Livro, LivroPage } from "@/interface/LivroPros";
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Externalized Static Components
